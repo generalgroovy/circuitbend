@@ -3,87 +3,60 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Video Circuitbender</title>
+<title>Video Circuitbender — Modulation Lab</title>
 <style>
-/* (styles unchanged except small addition) */
-:root{--bg:#101016;--panel:#181826;--panel2:#202034;--text:#f4f4fb;--muted:#b6b6ca;--accent:#8cf7ff;--accent2:#ff67d8;--line:#33334c;--radius:18px}
-body{margin:0;font-family:system-ui;background:var(--bg);color:var(--text)}
-main{display:grid;grid-template-columns:1.3fr .85fr;gap:18px;padding:16px}
-.videoWrap{position:relative}
-canvas{width:100%}
-.side{max-height:100vh;overflow:hidden}
-#controls{overflow:auto;max-height:calc(100vh - 120px)}
-.control{margin:10px 0}
-.rate{font-size:.75rem;color:#aaa}
+:root{--bg:#101018;--panel:#181829;--panel2:#22223a;--text:#f6f4ff;--muted:#b8b5cf;--line:#383852;--a:#8cf7ff;--b:#ff66d8;--c:#caff7a;--r:18px}*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:radial-gradient(circle at 10% 0,#30284d,#101018 48%);color:var(--text)}header{max-width:1600px;margin:auto;padding:22px 18px 8px}h1{margin:0;font-size:clamp(2rem,5vw,5rem);letter-spacing:-.07em;line-height:.9}.tag{max-width:980px;color:var(--muted);line-height:1.45}main{max-width:1600px;margin:auto;padding:12px 18px 34px;display:grid;grid-template-columns:minmax(390px,1.35fr) minmax(380px,.9fr);gap:16px}@media(max-width:980px){main{grid-template-columns:1fr}.side{position:static!important;max-height:none!important}.scroll{max-height:none!important}}.card{background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.025));border:1px solid var(--line);border-radius:var(--r);box-shadow:0 18px 70px #0007;overflow:hidden}.stage{padding:14px}.drop{border:2px dashed #575771;background:#0004;border-radius:var(--r);padding:16px;text-align:center;display:grid;gap:8px}.drop.drag{border-color:var(--a);background:#8cf7ff16}input[type=file]{display:none}button,.filebtn,select,input[type=number],input[type=text]{background:#26263d;color:var(--text);border:1px solid var(--line);border-radius:12px;padding:9px 10px;font-weight:700}button,.filebtn,select{cursor:pointer}button:hover,.filebtn:hover{border-color:var(--a)}.toolbar{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}.videoWrap{background:#000;border-radius:var(--r);overflow:hidden;min-height:300px;display:grid;place-items:center;position:relative}video{display:none}canvas{width:100%;display:block;max-height:74vh;background:#000}.placeholder{padding:70px 22px;color:#8f8ca5;text-align:center}.side{position:sticky;top:10px;max-height:calc(100vh - 20px);display:grid;gap:12px;align-content:start}.pad{padding:14px}.scroll{max-height:calc(100vh - 190px);overflow:auto;padding-right:6px}.scroll::-webkit-scrollbar{width:10px}.scroll::-webkit-scrollbar-thumb{background:var(--line);border-radius:10px}.scroll::-webkit-scrollbar-thumb:hover{background:var(--a)}details{border-top:1px solid var(--line);padding:12px 0}summary{cursor:pointer;list-style:none;font-weight:900;display:flex;justify-content:space-between}summary:after{content:'+';color:var(--a)}details[open] summary:after{content:'–'}.hint{color:var(--muted);font-size:.88rem;line-height:1.35}.control{background:#11111d99;border:1px solid #303049;border-radius:14px;padding:10px;margin:10px 0}.topline{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center}.val{font-family:ui-monospace,monospace;color:var(--a);font-size:.8rem}.slider{width:100%;accent-color:var(--b)}.modgrid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:8px}.modgrid label{font-size:.72rem;color:#cfcae8;display:grid;gap:3px}.modgrid input,.modgrid select{width:100%;font-size:.78rem;padding:7px}.check{display:flex;gap:8px;align-items:center}.presetGrid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}.readout{font-family:ui-monospace,monospace;color:#bafcff;background:#0006;border:1px solid #33334d;border-radius:12px;padding:10px;font-size:.78rem;max-height:150px;overflow:auto;white-space:pre-wrap}.mini{font-size:.75rem;color:#9f9bb8}.pill{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:4px 8px;margin:2px;color:#bdb8d5;font-size:.75rem}
 </style>
 </head>
 <body>
+<header><h1>Video Circuitbender</h1><p class="tag">Upload a video and mutate it locally in-browser. Every numeric slider has automation: Δ/sec drift, LFO waveforms, random/sample-and-hold, BPM sync, min/max clamps, phase, smoothing, one-shot ramps, automation recording/playback, macro controls, chaos seeds, and per-parameter modulation depth.</p></header>
 <main>
-<section>
-<input type="file" id="file" accept="video/*">
-<video id="video" loop muted playsinline style="display:none"></video>
-<canvas id="canvas"></canvas>
+<section class="card stage">
+  <div id="drop" class="drop"><strong>Drop video here</strong><span class="hint">MP4/WebM/MOV. Effects start clean; video loops automatically.</span><label class="filebtn">Choose video<input id="file" type="file" accept="video/*"></label></div>
+  <div class="toolbar"><button id="playBtn">Play/Pause</button><button id="resetBtn">Reset</button><button id="randomBtn">Random</button><button id="chaosBtn">CHAOS</button><button id="recBtn">Record automation</button><button id="playAutoBtn">Play automation</button><button id="clearAutoBtn">Clear automation</button><button id="snapBtn">PNG frame</button></div>
+  <div class="videoWrap"><video id="video" loop muted playsinline></video><canvas id="canvas"></canvas><div id="placeholder" class="placeholder">No video loaded yet.</div></div>
+  <p class="hint"><span class="pill">Δ/sec</span><span class="pill">LFO</span><span class="pill">BPM sync</span><span class="pill">automation recording</span><span class="pill">macros</span><span class="pill">per-slider clamps</span></p>
+  <div id="readout" class="readout">Waiting for video…</div>
 </section>
 <aside class="side">
-<div id="controls"></div>
+  <section class="card pad"><h2 style="margin:0 0 8px">Global modulation</h2><div class="modgrid"><label>BPM<input id="bpm" type="number" value="120" min="20" max="400"></label><label>Master speed<input id="masterSpeed" type="number" value="1" min="-8" max="8" step="0.01"></label><label>Macro A<input id="macroA" type="range" min="0" max="1" step="0.001" value="0"></label><label>Macro B<input id="macroB" type="range" min="0" max="1" step="0.001" value="0"></label></div></section>
+  <section class="card pad"><h2 style="margin:0 0 8px">Presets</h2><div class="presetGrid"><button data-preset="clean">Clean</button><button data-preset="vhs">VHS goblin</button><button data-preset="mosh">Datamosh soup</button><button data-preset="acid">Acid arcade</button><button data-preset="cctv">Broken CCTV</button><button data-preset="terminal">Haunted terminal</button></div></section>
+  <section class="card pad scroll" id="controls"></section>
 </aside>
 </main>
 <script>
-const video=document.getElementById('video');
-const canvas=document.getElementById('canvas');
-const ctx=canvas.getContext('2d');
-const controls=document.getElementById('controls');
-
-const defaults={brightness:0,contrast:0,rgbSplit:0};
-let s={...defaults};
-let rates={};
-
-function build(){
- controls.innerHTML='';
- for(const k in defaults){
-  const div=document.createElement('div');div.className='control';
-  div.innerHTML=`
-   <label>${k}</label>
-   <input type="range" min="-100" max="100" value="0" data-k="${k}">
-   <div class="rate">Δ/sec</div>
-   <input type="range" min="-50" max="50" value="0" step="0.1" data-rate="${k}">
-  `;
-  controls.appendChild(div);
- }
-}
-
-controls.addEventListener('input',e=>{
- if(e.target.dataset.k){s[e.target.dataset.k]=+e.target.value}
- if(e.target.dataset.rate){rates[e.target.dataset.rate]=+e.target.value}
-});
-
-let last=performance.now();
-function loop(t){
- requestAnimationFrame(loop);
- const dt=(t-last)/1000; last=t;
-
- for(const k in rates){
-  if(rates[k]){
-   s[k]+=rates[k]*dt;
-  }
- }
-
- ctx.drawImage(video,0,0,canvas.width,canvas.height);
-}
-
-document.getElementById('file').onchange=e=>{
- const f=e.target.files[0];
- if(!f)return;
- video.src=URL.createObjectURL(f);
- video.onloadedmetadata=()=>{
-  canvas.width=video.videoWidth;
-  canvas.height=video.videoHeight;
-  video.play();
-  requestAnimationFrame(loop);
- };
+const video=document.getElementById('video'),canvas=document.getElementById('canvas'),ctx=canvas.getContext('2d',{willReadFrequently:true});
+const file=document.getElementById('file'),drop=document.getElementById('drop'),placeholder=document.getElementById('placeholder'),controls=document.getElementById('controls'),readout=document.getElementById('readout');
+const ui={bpm:document.getElementById('bpm'),masterSpeed:document.getElementById('masterSpeed'),macroA:document.getElementById('macroA'),macroB:document.getElementById('macroB')};
+const params={
+ renderScale:[.15,1,.75,.01],fpsLimit:[5,60,60,1],brightness:[-100,100,0,1],contrast:[-100,100,0,1],saturation:[-100,300,0,1],hue:[-180,180,0,1],rgbSplit:[0,90,0,1],rgbAngle:[0,360,0,1],posterize:[0,14,0,1],bitDepth:[1,8,8,1],dither:[0,90,0,1],threshold:[0,255,0,1],noise:[0,150,0,1],saltPepper:[0,30,0,.1],scanlines:[0,100,0,1],scanlineSpeed:[0,30,0,.1],rollingTear:[0,100,0,1],wobble:[0,90,0,1],wobbleFreq:[1,50,6,.1],waveSpeed:[-30,30,2,.1],jitterX:[0,90,0,1],jitterY:[0,90,0,1],rotationJitter:[0,18,0,.1],pixelate:[1,64,1,1],glitchBlocks:[0,120,0,1],blockSize:[4,220,32,1],blockDrift:[0,300,30,1],pixelSort:[0,100,0,1],sortThreshold:[0,255,120,1],echo:[0,95,0,1],feedback:[0,98,0,1],smear:[0,80,0,1],freezeChance:[0,15,0,.1],frameSkip:[0,12,0,1],strobe:[0,100,0,1],strobeRate:[1,50,8,.1],kaleido:[0,10,0,1],vignette:[0,100,0,1],keyHue:[0,360,120,1],keyRange:[1,160,35,1],keyReplaceHue:[0,360,300,1]
 };
-
-build();
+const bools={bypass:false,invert:false,grayscale:false,mirror:false,chromaKey:false};
+let s={},base={},mods={},recording=false,playingAuto=false,auto=[],autoStart=0,last=performance.now(),frames=0,frozen=null;
+let echo=document.createElement('canvas'),echoCtx=echo.getContext('2d',{willReadFrequently:true}),tmp=document.createElement('canvas'),tmpCtx=tmp.getContext('2d',{willReadFrequently:true});
+function init(){for(const k in params){s[k]=base[k]=params[k][2];mods[k]={rate:0,mode:'off',amount:0,freq:1,sync:'free',division:1,phase:0,min:params[k][0],max:params[k][1],smooth:0,macro:'none',rampTo:params[k][2],rampSec:0,hold:0,lastRand:0,randTimer:0}}Object.assign(s,bools);Object.assign(base,bools)}
+const groups=[['Render',['renderScale','fpsLimit']],['Color',['brightness','contrast','saturation','hue','invert','grayscale']],['RGB / channels',['rgbSplit','rgbAngle']],['Bitcrush',['posterize','bitDepth','dither','threshold']],['Analog filth',['noise','saltPepper','scanlines','scanlineSpeed','rollingTear']],['Geometry',['wobble','wobbleFreq','waveSpeed','jitterX','jitterY','rotationJitter']],['Glitch',['pixelate','glitchBlocks','blockSize','blockDrift','pixelSort','sortThreshold']],['Temporal',['echo','feedback','smear','freezeChance','frameSkip']],['Optical',['strobe','strobeRate','mirror','kaleido','vignette']],['Chroma key',['chromaKey','keyHue','keyRange','keyReplaceHue']]];
+function build(){controls.innerHTML='<h2 style="margin:0">Effect controls</h2><p class="hint">For each slider: set a base value, drift per second, modulation shape, speed, BPM sync, min/max, smoothing, macro mapping, or one-shot ramp.</p>';for(const [title,keys] of groups){const d=document.createElement('details');d.open=['Render','Color'].includes(title);d.innerHTML=`<summary>${title}</summary>`;keys.forEach(k=>d.appendChild(control(k)));controls.appendChild(d)}sync(true)}
+function control(k){const div=document.createElement('div');div.className='control';if(k in bools){div.innerHTML=`<label class="check"><input type="checkbox" data-bool="${k}"> ${label(k)}</label><p class="mini">Boolean switch: can be toggled live and stored in presets.</p>`;return div}const [min,max,def,step]=params[k];div.innerHTML=`<div class="topline"><strong>${label(k)}</strong><span class="val" id="v-${k}">${def}</span></div><input class="slider" type="range" min="${min}" max="${max}" step="${step}" data-k="${k}"><div class="modgrid"><label>Δ/sec<input type="number" step="0.01" data-m="rate" data-p="${k}" value="0"></label><label>Mode<select data-m="mode" data-p="${k}"><option>off</option><option>sine</option><option>triangle</option><option>square</option><option>saw</option><option>noise</option><option>sampleHold</option><option>randomWalk</option></select></label><label>Amount<input type="number" step="0.01" data-m="amount" data-p="${k}" value="0"></label><label>Freq Hz<input type="number" step="0.01" data-m="freq" data-p="${k}" value="1"></label><label>BPM sync<select data-m="sync" data-p="${k}"><option value="free">free Hz</option><option value="beat">beat synced</option></select></label><label>Beat division<input type="number" step="0.125" min="0.125" data-m="division" data-p="${k}" value="1"></label><label>Phase<input type="number" step="0.01" data-m="phase" data-p="${k}" value="0"></label><label>Smoothing<input type="number" step="0.01" min="0" max="1" data-m="smooth" data-p="${k}" value="0"></label><label>Min clamp<input type="number" step="${step}" data-m="min" data-p="${k}" value="${min}"></label><label>Max clamp<input type="number" step="${step}" data-m="max" data-p="${k}" value="${max}"></label><label>Macro<select data-m="macro" data-p="${k}"><option>none</option><option>A+</option><option>A-</option><option>B+</option><option>B-</option></select></label><label>Ramp target<input type="number" step="${step}" data-m="rampTo" data-p="${k}" value="${def}"></label><label>Ramp seconds<input type="number" step="0.1" min="0" data-m="rampSec" data-p="${k}" value="0"></label></div>`;return div}
+function label(k){return k.replace(/([A-Z])/g,' $1').replace(/^./,c=>c.toUpperCase())}
+controls.addEventListener('input',e=>{const k=e.target.dataset.k,b=e.target.dataset.bool,p=e.target.dataset.p,m=e.target.dataset.m;if(k){base[k]=+e.target.value;s[k]=base[k]}if(b){base[b]=s[b]=e.target.checked}if(p&&m){mods[p][m]=['mode','sync','macro'].includes(m)?e.target.value:+e.target.value}sync(false)});
+function sync(inputs){document.querySelectorAll('[data-k]').forEach(el=>{if(inputs)el.value=base[el.dataset.k];document.getElementById('v-'+el.dataset.k).textContent=fmt(s[el.dataset.k])});document.querySelectorAll('[data-bool]').forEach(el=>{if(inputs)el.checked=!!s[el.dataset.bool]});readout.textContent=JSON.stringify({values:s,modulation:mods,automationFrames:auto.length},null,2)}
+function fmt(v){return Number.isFinite(v)?(+v).toFixed(2):v}
+function applyMods(t,dt){const bpm=+ui.bpm.value||120,master=+ui.masterSpeed.value||1,A=+ui.macroA.value,B=+ui.macroB.value;for(const k in params){let target=base[k];const m=mods[k];base[k]=clamp(base[k]+m.rate*dt*master,params[k][0],params[k][1]);target=base[k];const freq=m.sync==='beat'?(bpm/60)/Math.max(.001,m.division):m.freq;const ph=t*freq*master+m.phase;let lfo=0;if(m.mode==='sine')lfo=Math.sin(ph*Math.PI*2);else if(m.mode==='triangle')lfo=2*Math.abs(2*(ph-Math.floor(ph+.5)))-1;else if(m.mode==='square')lfo=Math.sin(ph*Math.PI*2)>=0?1:-1;else if(m.mode==='saw')lfo=2*(ph-Math.floor(ph))-.5;else if(m.mode==='noise')lfo=Math.random()*2-1;else if(m.mode==='sampleHold'){m.randTimer-=dt;if(m.randTimer<=0){m.lastRand=Math.random()*2-1;m.randTimer=1/Math.max(.001,freq)}lfo=m.lastRand}else if(m.mode==='randomWalk'){m.lastRand=clamp(m.lastRand+(Math.random()*2-1)*dt*freq,-1,1);lfo=m.lastRand}target+=lfo*m.amount;if(m.macro==='A+')target+=A*m.amount;if(m.macro==='A-')target-=A*m.amount;if(m.macro==='B+')target+=B*m.amount;if(m.macro==='B-')target-=B*m.amount;if(m.rampSec>0){target+=(m.rampTo-target)*Math.min(1,dt/m.rampSec)}target=clamp(target,m.min,m.max);s[k]=m.smooth?lerp(s[k],target,1-Math.pow(m.smooth,dt*60)):target}}
+function resize(){if(!video.videoWidth)return;const w=Math.max(16,Math.floor(video.videoWidth*s.renderScale)),h=Math.max(16,Math.floor(video.videoHeight*s.renderScale));if(canvas.width!==w||canvas.height!==h){canvas.width=tmp.width=echo.width=w;canvas.height=tmp.height=echo.height=h;frozen=null}}
+function draw(now){requestAnimationFrame(draw);if(!video.videoWidth||video.paused)return;let dt=Math.min(.08,(now-last)/1000);last=now;applyMods(now/1000,dt);if(recording)auto.push({t:performance.now()-autoStart,base:structuredClone(base),mods:structuredClone(mods),bools:Object.fromEntries(Object.keys(bools).map(k=>[k,s[k]]))});if(playingAuto&&auto.length){let at=(performance.now()-autoStart)%auto[auto.length-1].t;let f=auto.find(x=>x.t>=at)||auto[0];Object.assign(base,f.base);Object.assign(mods,f.mods);Object.assign(s,f.bools)}if(now-last<1000/s.fpsLimit)return;resize();frames++;const w=canvas.width,h=canvas.height;if(s.frameSkip&&frames%(Math.floor(s.frameSkip)+1)!==0)return;tmpCtx.save();tmpCtx.clearRect(0,0,w,h);tmpCtx.translate(w/2+(Math.random()*2-1)*s.jitterX,h/2+(Math.random()*2-1)*s.jitterY);tmpCtx.rotate((Math.random()*2-1)*s.rotationJitter*Math.PI/180);if(s.mirror)tmpCtx.scale(-1,1);tmpCtx.drawImage(video,-w/2,-h/2,w,h);tmpCtx.restore();ctx.clearRect(0,0,w,h);if(s.feedback){ctx.globalAlpha=s.feedback/100;ctx.drawImage(echo,0,0);ctx.globalAlpha=1}if(s.kaleido>1)kaleido(w,h);else wobble(w,h,now);if(!s.bypass){rgb(w,h,now);pixels(w,h,now);if(s.pixelate>1)pixelate(w,h);if(s.smear)smear(w,h);if(s.pixelSort)sortPix(w,h);if(s.glitchBlocks)blocks(w,h);if(s.scanlines)scan(w,h,now);if(s.strobe&&Math.sin(now/1000*s.strobeRate*Math.PI*2)>0)flash(w,h);if(s.vignette)vignette(w,h)}echoCtx.globalAlpha=s.echo/100||1;echoCtx.drawImage(canvas,0,0);echoCtx.globalAlpha=1;sync(false)}
+function wobble(w,h,t){if(!s.wobble){ctx.drawImage(tmp,0,0);return}for(let y=0;y<h;y+=2){const dx=Math.sin(y/h*s.wobbleFreq*Math.PI*2+t/1000*s.waveSpeed)*s.wobble;ctx.drawImage(tmp,0,y,w,2,dx,y,w,2)}}
+function kaleido(w,h){const n=Math.floor(s.kaleido);ctx.save();ctx.translate(w/2,h/2);for(let i=0;i<n;i++){ctx.save();ctx.rotate(i*Math.PI*2/n);if(i%2)ctx.scale(-1,1);ctx.drawImage(tmp,-w/2,-h/2,w,h);ctx.restore()}ctx.restore()}
+function rgb(w,h,t){if(!s.rgbSplit)return;let a=s.rgbAngle*Math.PI/180,dx=Math.cos(a)*s.rgbSplit,dy=Math.sin(a)*s.rgbSplit;ctx.globalCompositeOperation='screen';ctx.globalAlpha=.5;ctx.filter='sepia(1) saturate(8) hue-rotate(-45deg)';ctx.drawImage(canvas,dx,dy);ctx.filter='sepia(1) saturate(8) hue-rotate(80deg)';ctx.drawImage(canvas,-dx,-dy);ctx.filter='none';ctx.globalAlpha=1;ctx.globalCompositeOperation='source-over'}
+function pixels(w,h,t){let img=ctx.getImageData(0,0,w,h),d=img.data,c=(259*(s.contrast+255))/(255*(259-s.contrast)),lev=s.posterize||Math.pow(2,Math.round(s.bitDepth));for(let i=0;i<d.length;i+=4){let r=c*(d[i]-128)+128+s.brightness,g=c*(d[i+1]-128)+128+s.brightness,b=c*(d[i+2]-128)+128+s.brightness;let [hh,ss,ll]=rgbToHsl(r,g,b);hh=(hh+s.hue/360+1)%1;ss=clamp01(ss*(1+s.saturation/100));if(s.chromaKey&&hued(hh*360,s.keyHue)<s.keyRange)[r,g,b]=hslToRgb(((s.keyReplaceHue+t/20)%360)/360,1,ll);else [r,g,b]=hslToRgb(hh,ss,ll);if(s.grayscale){let y=.299*r+.587*g+.114*b;r=g=b=y}if(s.invert){r=255-r;g=255-g;b=255-b}if(lev<256){r=Math.round(r/255*(lev-1))/(lev-1)*255;g=Math.round(g/255*(lev-1))/(lev-1)*255;b=Math.round(b/255*(lev-1))/(lev-1)*255}if(s.dither){let m=((i/4)%w+Math.floor(i/4/w))%2?s.dither:-s.dither;r+=m;g+=m;b+=m}if(s.threshold){let y=(r+g+b)/3>s.threshold?255:0;r=g=b=y}if(s.noise){let n=(Math.random()*2-1)*s.noise;r+=n;g+=n;b+=n}if(Math.random()<s.saltPepper/1000){let v=Math.random()<.5?0:255;r=g=b=v}d[i]=clamp(r,0,255);d[i+1]=clamp(g,0,255);d[i+2]=clamp(b,0,255)}ctx.putImageData(img,0,0)}
+function pixelate(w,h){let p=Math.max(1,s.pixelate);tmpCtx.imageSmoothingEnabled=false;tmpCtx.clearRect(0,0,w,h);tmpCtx.drawImage(canvas,0,0,w/p,h/p);ctx.imageSmoothingEnabled=false;ctx.drawImage(tmp,0,0,w/p,h/p,0,0,w,h);ctx.imageSmoothingEnabled=true}function smear(w,h){for(let y=0;y<h;y+=3)if(Math.random()<s.smear/100){let x=Math.random()*w,l=Math.random()*w*.45;ctx.drawImage(canvas,x,y,1,3,x,y,l,3)}}function blocks(w,h){for(let i=0;i<s.glitchBlocks;i++){let bw=4+Math.random()*s.blockSize,bh=4+Math.random()*s.blockSize,x=Math.random()*w,y=Math.random()*h;ctx.drawImage(canvas,x,y,bw,bh,x+(Math.random()*2-1)*s.blockDrift,y,bw,bh)}}function sortPix(w,h){let img=ctx.getImageData(0,0,w,h),d=img.data,rows=Math.floor(h*s.pixelSort/100);for(let n=0;n<rows;n++){let y=Math.floor(Math.random()*h),row=[];for(let x=0;x<w;x++){let i=(y*w+x)*4,br=(d[i]+d[i+1]+d[i+2])/3;if(br>s.sortThreshold)row.push([br,d[i],d[i+1],d[i+2],x])}row.sort((a,b)=>a[0]-b[0]);row.forEach((p,j)=>{let i=(y*w+p[4])*4;d[i]=row[j][1];d[i+1]=row[j][2];d[i+2]=row[j][3]})}ctx.putImageData(img,0,0)}function scan(w,h,t){ctx.save();ctx.globalAlpha=s.scanlines/100;ctx.fillStyle='#000';let off=t/80*s.scanlineSpeed%4;for(let y=off;y<h;y+=4)ctx.fillRect(0,y,w,1);ctx.restore();if(s.rollingTear){let y=t/10%h;ctx.drawImage(canvas,0,y,w,12,(Math.random()*2-1)*s.rollingTear,y,w,12)}}function flash(w,h){ctx.save();ctx.globalAlpha=s.strobe/100;ctx.fillStyle='#fff';ctx.fillRect(0,0,w,h);ctx.restore()}function vignette(w,h){let g=ctx.createRadialGradient(w/2,h/2,Math.min(w,h)*.15,w/2,h/2,Math.max(w,h)*.7);g.addColorStop(0,'#0000');g.addColorStop(1,`rgba(0,0,0,${s.vignette/100})`);ctx.fillStyle=g;ctx.fillRect(0,0,w,h)}
+function clamp(v,a,b){return Math.max(a,Math.min(b,v))}function clamp01(v){return clamp(v,0,1)}function lerp(a,b,t){return a+(b-a)*t}function hued(a,b){let d=Math.abs(a-b)%360;return d>180?360-d:d}function rgbToHsl(r,g,b){r/=255;g/=255;b/=255;let max=Math.max(r,g,b),min=Math.min(r,g,b),h,s,l=(max+min)/2;if(max===min)h=s=0;else{let d=max-min;s=l>.5?d/(2-max-min):d/(max+min);h=max===r?(g-b)/d+(g<b?6:0):max===g?(b-r)/d+2:(r-g)/d+4;h/=6}return[h,s,l]}function hslToRgb(h,s,l){let r,g,b;if(s===0)r=g=b=l;else{let f=(p,q,t)=>{if(t<0)t+=1;if(t>1)t-=1;if(t<1/6)return p+(q-p)*6*t;if(t<1/2)return q;if(t<2/3)return p+(q-p)*(2/3-t)*6;return p},q=l<.5?l*(1+s):l+s-l*s,p=2*l-q;r=f(p,q,h+1/3);g=f(p,q,h);b=f(p,q,h-1/3)}return[r*255,g*255,b*255]}
+const presets={clean:{},vhs:{contrast:18,saturation:-18,rgbSplit:9,noise:24,scanlines:55,scanlineSpeed:3,rollingTear:28,wobble:7,feedback:18,vignette:38},mosh:{posterize:7,bitDepth:5,rgbSplit:18,smear:35,feedback:82,echo:72,glitchBlocks:18,blockSize:90,blockDrift:120,frameSkip:2,freezeChance:2,pixelSort:8},acid:{saturation:240,hue:90,rgbSplit:28,posterize:6,dither:35,pixelate:7,kaleido:5,strobe:18,strobeRate:11,chromaKey:true,keyRange:55,keyReplaceHue:300},cctv:{grayscale:true,contrast:34,brightness:-12,noise:38,saltPepper:8,scanlines:65,rollingTear:45,jitterX:8,jitterY:3,frameSkip:3,vignette:52},terminal:{grayscale:true,contrast:70,threshold:95,scanlines:40,wobble:10,wobbleFreq:24,noise:18,pixelate:3,glitchBlocks:10,blockDrift:70,feedback:55}};
+document.querySelectorAll('[data-preset]').forEach(b=>b.onclick=()=>{init();Object.assign(base,presets[b.dataset.preset]);Object.assign(s,base);sync(true);resize()});
+document.getElementById('resetBtn').onclick=()=>{init();sync(true);resize()};document.getElementById('randomBtn').onclick=()=>rand(.35);document.getElementById('chaosBtn').onclick=()=>rand(1);function rand(power){for(const k in params){let [min,max]=params[k];base[k]=min+Math.random()*(max-min)*power;if(Math.random()<.35){mods[k].mode=['sine','triangle','sampleHold','randomWalk'][Math.floor(Math.random()*4)];mods[k].amount=(max-min)*.08*Math.random()*power;mods[k].freq=.05+Math.random()*4;mods[k].sync=Math.random()<.35?'beat':'free'}}for(const k in bools)s[k]=base[k]=Math.random()<.2*power;sync(true);resize()}
+document.getElementById('playBtn').onclick=()=>video.paused?video.play():video.pause();document.getElementById('recBtn').onclick=e=>{recording=!recording;if(recording){auto=[];autoStart=performance.now()}e.target.textContent=recording?'Stop recording':'Record automation'};document.getElementById('playAutoBtn').onclick=e=>{playingAuto=!playingAuto;autoStart=performance.now();e.target.textContent=playingAuto?'Stop automation':'Play automation'};document.getElementById('clearAutoBtn').onclick=()=>auto=[];document.getElementById('snapBtn').onclick=()=>{let a=document.createElement('a');a.download='circuitbend-frame.png';a.href=canvas.toDataURL('image/png');a.click()};
+file.onchange=e=>e.target.files[0]&&load(e.target.files[0]);['dragenter','dragover'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.add('drag')}));['dragleave','drop'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.remove('drag')}));drop.addEventListener('drop',e=>e.dataTransfer.files[0]&&load(e.dataTransfer.files[0]));function load(f){video.src=URL.createObjectURL(f);placeholder.style.display='none';video.onloadedmetadata=()=>{resize();video.play();last=performance.now();requestAnimationFrame(draw)}}
+init();build();
 </script>
 </body>
 </html>
