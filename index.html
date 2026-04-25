@@ -1,0 +1,311 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Video Circuitbender</title>
+  <style>
+    :root{
+      --bg:#101016; --panel:#181826; --panel2:#202034; --text:#f4f4fb; --muted:#b6b6ca;
+      --accent:#8cf7ff; --accent2:#ff67d8; --line:#33334c; --danger:#ff6b6b;
+      --radius:18px;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:radial-gradient(circle at top left,#292947,var(--bg) 45%);color:var(--text)}
+    header{padding:28px 22px 14px;max-width:1500px;margin:auto}
+    h1{margin:0;font-size:clamp(2rem,4vw,4.2rem);letter-spacing:-.06em;line-height:.95}
+    .tagline{color:var(--muted);max-width:900px;font-size:1.05rem;line-height:1.45}
+    main{max-width:1500px;margin:auto;padding:16px 22px 40px;display:grid;grid-template-columns:minmax(360px,1.3fr) minmax(330px,.85fr);gap:18px}
+    @media(max-width:980px){main{grid-template-columns:1fr}.sticky{position:static!important}}
+    .card{background:linear-gradient(180deg,rgba(255,255,255,.055),rgba(255,255,255,.025));border:1px solid var(--line);border-radius:var(--radius);box-shadow:0 20px 70px rgba(0,0,0,.25);overflow:hidden}
+    .stage{padding:16px}
+    .drop{border:2px dashed #53536d;border-radius:var(--radius);padding:18px;display:grid;gap:12px;background:rgba(0,0,0,.18);text-align:center;transition:.2s}
+    .drop.drag{border-color:var(--accent);background:rgba(140,247,255,.08)}
+    input[type=file]{display:none}
+    button,.filebtn,select{border:1px solid var(--line);background:#25253b;color:var(--text);border-radius:12px;padding:10px 12px;font-weight:700;cursor:pointer}
+    button:hover,.filebtn:hover{border-color:var(--accent)}
+    .toolbar{display:flex;flex-wrap:wrap;gap:10px;margin:12px 0}
+    .videoWrap{position:relative;background:#000;border-radius:var(--radius);overflow:hidden;min-height:280px;display:grid;place-items:center}
+    video,canvas{width:100%;display:block;max-height:72vh;background:#000}
+    video.hidden{display:none}
+    .placeholder{padding:80px 22px;text-align:center;color:#8989a0}
+    .readout{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;color:#bafcff;background:rgba(0,0,0,.35);border:1px solid #34344f;border-radius:12px;padding:10px;font-size:.83rem;overflow:auto;max-height:180px;white-space:pre-wrap}
+    .side{display:grid;gap:14px;align-content:start}.sticky{position:sticky;top:12px}
+    details{border-bottom:1px solid var(--line);padding:12px 0} details:last-child{border-bottom:0}
+    summary{cursor:pointer;font-weight:900;list-style:none;display:flex;justify-content:space-between;gap:10px} summary::-webkit-details-marker{display:none}
+    summary:after{content:'+';color:var(--accent)} details[open] summary:after{content:'–'}
+    .group{padding:14px 16px}.hint{color:var(--muted);font-size:.9rem;line-height:1.35;margin:8px 0 12px}
+    .control{display:grid;grid-template-columns:1fr auto;gap:8px 12px;align-items:center;margin:12px 0}.control label{font-size:.9rem;color:#dedeee}.control .val{font-family:ui-monospace,monospace;color:var(--accent);font-size:.82rem;min-width:54px;text-align:right}.control input[type=range]{grid-column:1/3;width:100%;accent-color:var(--accent2)}
+    .check{display:flex;gap:8px;align-items:flex-start;margin:10px 0;color:#dedeee}.check input{margin-top:3px;accent-color:var(--accent2)}
+    .presetGrid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}.presetGrid button{text-align:left;font-size:.9rem}
+    .pill{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:999px;padding:6px 9px;color:var(--muted);font-size:.82rem;margin:3px 4px 3px 0}
+    .danger{color:var(--danger)}
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Video Circuitbender</h1>
+    <p class="tagline">Upload a video, loop it, and abuse it with browser-based “circuitbend” effects: RGB channel drift, VHS crawl, bitcrush posterization, pixel sorting, scanlines, frame echoes, datamosh-ish smearing, waveform wobble, noise, glitch blocks, strobe, kaleidoscope mirroring, chroma key chaos, and more. Everything runs locally in your browser; no upload server required.</p>
+  </header>
+
+  <main>
+    <section class="card stage">
+      <div id="drop" class="drop">
+        <strong>Drop a video here</strong>
+        <span class="hint">or choose an MP4/WebM/MOV file. The app will play it on loop and render effects to the canvas.</span>
+        <label class="filebtn">Choose video<input id="file" type="file" accept="video/*"></label>
+      </div>
+
+      <div class="toolbar">
+        <button id="playBtn">Play / Pause</button>
+        <button id="resetBtn">Reset all controls</button>
+        <button id="randomBtn">Randomize responsibly</button>
+        <button id="chaosBtn">CHAOS randomize</button>
+        <button id="snapBtn">Download frame PNG</button>
+      </div>
+
+      <div class="videoWrap">
+        <video id="video" loop muted playsinline class="hidden"></video>
+        <canvas id="canvas"></canvas>
+        <div id="placeholder" class="placeholder">No video loaded yet. Effects are initially off.</div>
+      </div>
+
+      <p class="hint">Tip: performance depends on video resolution and enabled effects. If things get crunchy, lower render scale or disable pixel sorting / glitch blocks.</p>
+      <div id="readout" class="readout">Waiting for video…</div>
+    </section>
+
+    <aside class="side sticky">
+      <section class="card group">
+        <h2 style="margin:0 0 8px">Presets</h2>
+        <div class="presetGrid">
+          <button data-preset="clean">Clean / none</button>
+          <button data-preset="vhs">VHS goblin</button>
+          <button data-preset="datamosh">Datamosh soup</button>
+          <button data-preset="acid">Acid arcade</button>
+          <button data-preset="security">Broken CCTV</button>
+          <button data-preset="terminal">Haunted terminal</button>
+        </div>
+      </section>
+
+      <section class="card group" id="controls"></section>
+    </aside>
+  </main>
+
+<script>
+const video = document.getElementById('video');
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d', { willReadFrequently: true });
+const file = document.getElementById('file');
+const drop = document.getElementById('drop');
+const placeholder = document.getElementById('placeholder');
+const controlsEl = document.getElementById('controls');
+const readout = document.getElementById('readout');
+
+const defaults = {
+  renderScale: .75, fpsLimit: 60, bypass: false,
+  brightness: 0, contrast: 0, saturation: 0, hue: 0, invert: false, grayscale: false,
+  rgbSplit: 0, rgbAngle: 0, chromaAberration: 0, channelCycle: 0,
+  posterize: 0, bitDepth: 8, dither: 0, threshold: 0,
+  noise: 0, saltPepper: 0, scanlines: 0, scanlineSpeed: 0, rollingTear: 0,
+  wobble: 0, wobbleFreq: 6, waveSpeed: 2, jitterX: 0, jitterY: 0, rotationJitter: 0,
+  pixelate: 1, glitchBlocks: 0, blockSize: 32, blockDrift: 30, pixelSort: 0, sortThreshold: 120,
+  echo: 0, feedback: 0, smear: 0, freezeChance: 0, frameSkip: 0,
+  strobe: 0, strobeRate: 8, mirror: false, kaleido: 0, vignette: 0,
+  chromaKey: false, keyHue: 120, keyRange: 35, keyReplaceHue: 300,
+};
+let s = { ...defaults };
+let lastFrame = 0, frameCount = 0, frozen = null;
+let echoCanvas = document.createElement('canvas');
+let echoCtx = echoCanvas.getContext('2d', { willReadFrequently: true });
+let tempCanvas = document.createElement('canvas');
+let tempCtx = tempCanvas.getContext('2d', { willReadFrequently: true });
+
+const groups = [
+  ['General render', 'Control playback/rendering. Render scale is the best speed knob: lower means faster and uglier.', [
+    ['renderScale','range',.15,1,0.01,'Render scale'], ['fpsLimit','range',5,60,1,'FPS cap'], ['bypass','check',0,1,1,'Bypass all effects']]],
+  ['Color abuse', 'Classic video-synth controls: push levels, rotate hue, invert, desaturate, or make colors chemically wrong.', [
+    ['brightness','range',-100,100,1,'Brightness'], ['contrast','range',-100,100,1,'Contrast'], ['saturation','range',-100,300,1,'Saturation'], ['hue','range',-180,180,1,'Hue rotate'], ['invert','check',0,1,1,'Invert colors'], ['grayscale','check',0,1,1,'Grayscale']]],
+  ['RGB split / channel damage', 'Separates red, green, and blue channels to mimic bent analog cables and misaligned CRT guns.', [
+    ['rgbSplit','range',0,80,1,'RGB split distance'], ['rgbAngle','range',0,360,1,'RGB split angle'], ['chromaAberration','range',0,40,1,'Edge chroma pull'], ['channelCycle','range',0,30,1,'Channel cycling speed']]],
+  ['Bitcrush / posterize', 'Reduces color precision, adds harsh quantization, and forces images into nasty low-bit palettes.', [
+    ['posterize','range',0,12,1,'Posterize levels'], ['bitDepth','range',1,8,1,'Fake bit depth'], ['dither','range',0,80,1,'Ordered dither strength'], ['threshold','range',0,255,1,'Black/white threshold']]],
+  ['Analog filth', 'Adds noise, salt-and-pepper static, scanlines, and rolling sync tear like a haunted VCR.', [
+    ['noise','range',0,120,1,'Noise amount'], ['saltPepper','range',0,20,.1,'Salt/pepper static'], ['scanlines','range',0,100,1,'Scanline darkness'], ['scanlineSpeed','range',0,20,.1,'Scanline crawl speed'], ['rollingTear','range',0,80,1,'Rolling tear strength']]],
+  ['Geometry panic', 'Warps the video line-by-line and jitters the frame position/rotation.', [
+    ['wobble','range',0,80,1,'Wave wobble'], ['wobbleFreq','range',1,40,.1,'Wave frequency'], ['waveSpeed','range',-20,20,.1,'Wave speed'], ['jitterX','range',0,80,1,'Horizontal jitter'], ['jitterY','range',0,80,1,'Vertical jitter'], ['rotationJitter','range',0,12,.1,'Rotation jitter']]],
+  ['Glitch machinery', 'Pixelates, throws random blocks around, and optionally performs slow fake pixel sorting by brightness.', [
+    ['pixelate','range',1,48,1,'Pixel size'], ['glitchBlocks','range',0,80,1,'Glitch block count'], ['blockSize','range',4,180,1,'Glitch block max size'], ['blockDrift','range',0,220,1,'Glitch block drift'], ['pixelSort','range',0,100,1,'Pixel sort amount'], ['sortThreshold','range',0,255,1,'Pixel sort threshold']]],
+  ['Temporal crimes', 'Frame echo, feedback trails, smear, random freeze, and frame skipping for datamosh-adjacent mush.', [
+    ['echo','range',0,95,1,'Frame echo opacity'], ['feedback','range',0,98,1,'Feedback persistence'], ['smear','range',0,60,1,'Horizontal smear'], ['freezeChance','range',0,10,.1,'Random freeze chance'], ['frameSkip','range',0,10,1,'Frame skip hold']]],
+  ['Optical nonsense', 'Strobe, mirror, kaleidoscope-ish tiling, and vignette. Ridiculous, but occasionally beautiful.', [
+    ['strobe','range',0,100,1,'Strobe intensity'], ['strobeRate','range',1,40,.1,'Strobe rate'], ['mirror','check',0,1,1,'Mirror horizontally'], ['kaleido','range',0,8,1,'Kaleidoscope slices'], ['vignette','range',0,100,1,'Vignette']]],
+  ['Chroma key chaos', 'Finds pixels near a selected hue and replaces them with a cycling synthetic color.', [
+    ['chromaKey','check',0,1,1,'Enable chroma key chaos'], ['keyHue','range',0,360,1,'Key hue'], ['keyRange','range',1,120,1,'Hue tolerance'], ['keyReplaceHue','range',0,360,1,'Replacement hue']]],
+];
+
+function buildControls(){
+  controlsEl.innerHTML = '<h2 style="margin:0">Effect controls</h2><p class="hint">Each section explains what it does. Values update live while the video loops.</p>';
+  for (const [title, hint, items] of groups){
+    const d = document.createElement('details'); d.open = title === 'General render' || title === 'Color abuse';
+    d.innerHTML = `<summary>${title}</summary><p class="hint">${hint}</p>`;
+    for (const item of items){
+      const [key,type,min,max,step,label] = item;
+      if(type==='check'){
+        const row = document.createElement('label'); row.className='check';
+        row.innerHTML = `<input type="checkbox" data-key="${key}"><span>${label}</span>`;
+        d.appendChild(row);
+      } else {
+        const row = document.createElement('div'); row.className='control';
+        row.innerHTML = `<label>${label}</label><span class="val" id="val-${key}"></span><input type="range" min="${min}" max="${max}" step="${step}" data-key="${key}">`;
+        d.appendChild(row);
+      }
+    }
+    controlsEl.appendChild(d);
+  }
+  controlsEl.addEventListener('input', e => {
+    const key = e.target.dataset.key; if(!key) return;
+    s[key] = e.target.type === 'checkbox' ? e.target.checked : parseFloat(e.target.value);
+    syncUI(false);
+  });
+  syncUI(true);
+}
+function syncUI(updateInputs=true){
+  document.querySelectorAll('[data-key]').forEach(el=>{
+    const key = el.dataset.key;
+    if(updateInputs){ if(el.type==='checkbox') el.checked=!!s[key]; else el.value=s[key]; }
+    const val = document.getElementById('val-'+key); if(val) val.textContent = Number.isFinite(s[key]) ? (+s[key]).toFixed((el.step||'1').includes('.')?1:0) : s[key];
+  });
+  readout.textContent = JSON.stringify(s, null, 2);
+}
+
+function loadVideo(blob){
+  const url = URL.createObjectURL(blob);
+  video.src = url; video.classList.add('hidden'); placeholder.style.display='none';
+  video.onloadedmetadata = () => {
+    resize(); video.play(); requestAnimationFrame(draw);
+  };
+}
+file.onchange = e => e.target.files[0] && loadVideo(e.target.files[0]);
+['dragenter','dragover'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.add('drag')}));
+['dragleave','drop'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.remove('drag')}));
+drop.addEventListener('drop', e => e.dataTransfer.files[0] && loadVideo(e.dataTransfer.files[0]));
+window.addEventListener('resize', resize);
+function resize(){
+  if(!video.videoWidth) return;
+  canvas.width = Math.max(16, Math.floor(video.videoWidth * s.renderScale));
+  canvas.height = Math.max(16, Math.floor(video.videoHeight * s.renderScale));
+  echoCanvas.width=tempCanvas.width=canvas.width; echoCanvas.height=tempCanvas.height=canvas.height;
+}
+
+function draw(t=0){
+  requestAnimationFrame(draw);
+  if(!video.videoWidth || video.paused || video.ended) return;
+  if(t - lastFrame < 1000 / s.fpsLimit) return; lastFrame = t; frameCount++;
+  const oldW=canvas.width, oldH=canvas.height; resize(); if(oldW!==canvas.width || oldH!==canvas.height) frozen=null;
+  if(s.frameSkip && frameCount % (s.frameSkip+1) !== 0) return;
+
+  const w=canvas.width,h=canvas.height;
+  tempCtx.save(); tempCtx.clearRect(0,0,w,h);
+  const jx=(Math.random()*2-1)*s.jitterX, jy=(Math.random()*2-1)*s.jitterY, rot=(Math.random()*2-1)*s.rotationJitter*Math.PI/180;
+  tempCtx.translate(w/2+jx,h/2+jy); tempCtx.rotate(rot); if(s.mirror) tempCtx.scale(-1,1);
+  tempCtx.drawImage(video,-w/2,-h/2,w,h); tempCtx.restore();
+
+  if(Math.random() < s.freezeChance/100 && !frozen){ frozen = tempCtx.getImageData(0,0,w,h); }
+  if(frozen && Math.random() > .08) tempCtx.putImageData(frozen,0,0); else if(Math.random() < .12) frozen=null;
+
+  ctx.clearRect(0,0,w,h);
+  if(s.feedback>0){ ctx.globalAlpha=s.feedback/100; ctx.drawImage(echoCanvas,0,0); ctx.globalAlpha=1; }
+
+  if(s.kaleido>1) drawKaleido(w,h); else drawWobble(w,h,t);
+  if(!s.bypass){
+    if(s.rgbSplit || s.chromaAberration || s.channelCycle) rgbSplit(w,h,t);
+    pixelOps(w,h,t);
+    if(s.pixelate>1) pixelate(w,h);
+    if(s.smear) smear(w,h);
+    if(s.pixelSort) pixelSort(w,h);
+    if(s.glitchBlocks) glitchBlocks(w,h);
+    if(s.scanlines) scanlines(w,h,t);
+    if(s.strobe && Math.sin(t/1000*s.strobeRate*Math.PI*2)>0) flash(w,h);
+    if(s.vignette) vignette(w,h);
+  }
+  if(s.echo>0){ echoCtx.globalAlpha=s.echo/100; echoCtx.drawImage(canvas,0,0); echoCtx.globalAlpha=1; }
+  else echoCtx.drawImage(canvas,0,0);
+}
+function drawWobble(w,h,t){
+  if(s.bypass || !s.wobble){ ctx.drawImage(tempCanvas,0,0); return; }
+  const amp=s.wobble, freq=s.wobbleFreq, speed=s.waveSpeed;
+  for(let y=0;y<h;y+=2){ const dx=Math.sin(y/h*freq*Math.PI*2+t/1000*speed)*amp; ctx.drawImage(tempCanvas,0,y,w,2,dx,y,w,2); }
+  if(s.rollingTear){ const y=(t/20* (s.scanlineSpeed+1))%h; ctx.drawImage(tempCanvas,0,y,w,Math.min(18,h-y),s.rollingTear*(Math.random()*2-1),y,w,Math.min(18,h-y)); }
+}
+function drawKaleido(w,h){
+  const n=s.kaleido; ctx.save(); ctx.translate(w/2,h/2);
+  for(let i=0;i<n;i++){ ctx.save(); ctx.rotate(i*Math.PI*2/n); if(i%2) ctx.scale(-1,1); ctx.drawImage(tempCanvas,-w/2,-h/2,w,h); ctx.restore(); }
+  ctx.restore();
+}
+function rgbSplit(w,h,t){
+  const a=s.rgbAngle*Math.PI/180 + t/1000*s.channelCycle;
+  const dx=Math.cos(a)*s.rgbSplit, dy=Math.sin(a)*s.rgbSplit;
+  ctx.globalCompositeOperation='screen'; ctx.globalAlpha=.55;
+  ctx.filter='sepia(1) saturate(8) hue-rotate(-45deg)'; ctx.drawImage(canvas, dx, dy);
+  ctx.filter='sepia(1) saturate(8) hue-rotate(75deg)'; ctx.drawImage(canvas, -dx*.7, -dy*.7);
+  ctx.filter='sepia(1) saturate(8) hue-rotate(170deg)'; ctx.drawImage(canvas, dy*.5, -dx*.5);
+  ctx.filter='none'; ctx.globalAlpha=1; ctx.globalCompositeOperation='source-over';
+}
+function pixelOps(w,h,t){
+  const img=ctx.getImageData(0,0,w,h), d=img.data;
+  const c=(259*(s.contrast+255))/(255*(259-s.contrast)); const levels=s.posterize||Math.pow(2,s.bitDepth);
+  for(let i=0;i<d.length;i+=4){
+    let r=d[i],g=d[i+1],b=d[i+2];
+    r=c*(r-128)+128+s.brightness; g=c*(g-128)+128+s.brightness; b=c*(b-128)+128+s.brightness;
+    let [hh,ss,ll]=rgbToHsl(r,g,b); hh=(hh+s.hue/360+1)%1; ss=Math.max(0,Math.min(1,ss*(1+s.saturation/100)));
+    if(s.chromaKey && hueDist(hh*360,s.keyHue)<s.keyRange){ [r,g,b]=hslToRgb(((s.keyReplaceHue+t/20)%360)/360,1,ll); }
+    else [r,g,b]=hslToRgb(hh,ss,ll);
+    if(s.grayscale){ const y=.299*r+.587*g+.114*b; r=g=b=y; }
+    if(s.invert){ r=255-r;g=255-g;b=255-b; }
+    if(levels<256){ r=Math.round(r/255*(levels-1))/(levels-1)*255; g=Math.round(g/255*(levels-1))/(levels-1)*255; b=Math.round(b/255*(levels-1))/(levels-1)*255; }
+    if(s.dither){ const m=((i/4)%w + Math.floor((i/4)/w))%2 ? s.dither : -s.dither; r+=m;g+=m;b+=m; }
+    if(s.threshold){ const y=(r+g+b)/3 > s.threshold ? 255 : 0; r=g=b=y; }
+    if(s.noise){ const n=(Math.random()*2-1)*s.noise; r+=n;g+=n;b+=n; }
+    if(Math.random()<s.saltPepper/1000){ const sp=Math.random()<.5?0:255; r=g=b=sp; }
+    d[i]=clamp(r);d[i+1]=clamp(g);d[i+2]=clamp(b);
+  }
+  ctx.putImageData(img,0,0);
+}
+function pixelate(w,h){
+  const p=s.pixelate; tempCtx.imageSmoothingEnabled=false; tempCtx.clearRect(0,0,w,h); tempCtx.drawImage(canvas,0,0,w/p,h/p); ctx.imageSmoothingEnabled=false; ctx.drawImage(tempCanvas,0,0,w/p,h/p,0,0,w,h); ctx.imageSmoothingEnabled=true;
+}
+function smear(w,h){ for(let y=0;y<h;y+=3){ if(Math.random()<s.smear/100){ const x=Math.random()*w, len=Math.random()*w*.45; ctx.drawImage(canvas,x,y,1,3,x,y,len,3); } } }
+function glitchBlocks(w,h){ for(let i=0;i<s.glitchBlocks;i++){ const bw=4+Math.random()*s.blockSize,bh=4+Math.random()*s.blockSize,x=Math.random()*w,y=Math.random()*h,dx=x+(Math.random()*2-1)*s.blockDrift; ctx.drawImage(canvas,x,y,bw,bh,dx,y,bw,bh); } }
+function pixelSort(w,h){
+  const img=ctx.getImageData(0,0,w,h), d=img.data, rows=Math.floor(h*s.pixelSort/100);
+  for(let n=0;n<rows;n++){ const y=Math.floor(Math.random()*h), start=(y*w)*4, row=[]; for(let x=0;x<w;x++){ const i=start+x*4, br=(d[i]+d[i+1]+d[i+2])/3; if(br>s.sortThreshold) row.push([br,d[i],d[i+1],d[i+2],x]); }
+    row.sort((a,b)=>a[0]-b[0]); row.forEach((px,k)=>{ const i=start+px[4]*4; d[i]=row[k][1];d[i+1]=row[k][2];d[i+2]=row[k][3]; }); }
+  ctx.putImageData(img,0,0);
+}
+function scanlines(w,h,t){ ctx.save(); ctx.globalAlpha=s.scanlines/100; ctx.fillStyle='#000'; const off=(t/80*s.scanlineSpeed)%4; for(let y=off;y<h;y+=4) ctx.fillRect(0,y,w,1); ctx.restore(); if(s.rollingTear){ const y=(t/10)%h; ctx.drawImage(canvas,0,y,w,12,(Math.random()*2-1)*s.rollingTear,y,w,12); } }
+function flash(w,h){ ctx.save(); ctx.globalAlpha=s.strobe/100; ctx.fillStyle='#fff'; ctx.fillRect(0,0,w,h); ctx.restore(); }
+function vignette(w,h){ const g=ctx.createRadialGradient(w/2,h/2,Math.min(w,h)*.15,w/2,h/2,Math.max(w,h)*.7); g.addColorStop(0,'rgba(0,0,0,0)'); g.addColorStop(1,`rgba(0,0,0,${s.vignette/100})`); ctx.fillStyle=g; ctx.fillRect(0,0,w,h); }
+function clamp(v){return Math.max(0,Math.min(255,v))}
+function hueDist(a,b){ let d=Math.abs(a-b)%360; return d>180?360-d:d; }
+function rgbToHsl(r,g,b){ r/=255;g/=255;b/=255; const max=Math.max(r,g,b),min=Math.min(r,g,b); let h,s,l=(max+min)/2; if(max===min)h=s=0; else{ const d=max-min; s=l>.5?d/(2-max-min):d/(max+min); switch(max){case r:h=(g-b)/d+(g<b?6:0);break;case g:h=(b-r)/d+2;break;case b:h=(r-g)/d+4;break;} h/=6;} return [h,s,l]; }
+function hslToRgb(h,s,l){ let r,g,b; if(s===0)r=g=b=l; else{ const hue2rgb=(p,q,t)=>{ if(t<0)t+=1;if(t>1)t-=1;if(t<1/6)return p+(q-p)*6*t;if(t<1/2)return q;if(t<2/3)return p+(q-p)*(2/3-t)*6;return p;}; const q=l<.5?l*(1+s):l+s-l*s,p=2*l-q; r=hue2rgb(p,q,h+1/3);g=hue2rgb(p,q,h);b=hue2rgb(p,q,h-1/3);} return [r*255,g*255,b*255]; }
+
+const presets={
+ clean:{...defaults},
+ vhs:{...defaults,renderScale:.65,contrast:18,saturation:-18,rgbSplit:9,rgbAngle:12,noise:24,scanlines:55,scanlineSpeed:3,rollingTear:28,wobble:7,wobbleFreq:11,feedback:18,vignette:38},
+ datamosh:{...defaults,renderScale:.55,posterize:7,bitDepth:5,rgbSplit:18,smear:35,feedback:82,echo:72,glitchBlocks:18,blockSize:90,blockDrift:120,frameSkip:2,freezeChance:2,pixelSort:8},
+ acid:{...defaults,saturation:240,hue:90,channelCycle:8,rgbSplit:28,posterize:6,dither:35,pixelate:7,kaleido:5,strobe:18,strobeRate:11,chromaKey:true,keyRange:55,keyReplaceHue:300},
+ security:{...defaults,renderScale:.7,grayscale:true,contrast:34,brightness:-12,noise:38,saltPepper:8,scanlines:65,rollingTear:45,jitterX:8,jitterY:3,frameSkip:3,vignette:52},
+ terminal:{...defaults,renderScale:.6,grayscale:true,contrast:70,threshold:95,scanlines:40,wobble:10,wobbleFreq:24,noise:18,pixelate:3,glitchBlocks:10,blockDrift:70,feedback:55}
+};
+document.querySelectorAll('[data-preset]').forEach(b=>b.onclick=()=>{s={...presets[b.dataset.preset]}; syncUI(true); resize();});
+document.getElementById('playBtn').onclick=()=> video.paused ? video.play() : video.pause();
+document.getElementById('resetBtn').onclick=()=>{s={...defaults}; syncUI(true); resize();};
+document.getElementById('randomBtn').onclick=()=>randomize(.35);
+document.getElementById('chaosBtn').onclick=()=>randomize(1);
+document.getElementById('snapBtn').onclick=()=>{ const a=document.createElement('a'); a.download='circuitbend-frame.png'; a.href=canvas.toDataURL('image/png'); a.click(); };
+function randomize(power){ for(const [k,v] of Object.entries(defaults)){ if(k==='bypass') {s[k]=false; continue;} if(typeof v==='boolean'){ s[k]=Math.random()<.25*power; continue;} const input=document.querySelector(`[data-key="${k}"]`); if(!input || input.type==='checkbox') continue; const min=+input.min,max=+input.max; s[k]=+(min+Math.random()*(max-min)*power).toFixed(2); } syncUI(true); resize(); }
+buildControls();
+</script>
+</body>
+</html>
