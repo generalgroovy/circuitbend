@@ -1,0 +1,11 @@
+import fs from 'node:fs';
+const html=fs.readFileSync(new URL('../index.html',import.meta.url),'utf8');
+const js=fs.readFileSync(new URL('../main.js',import.meta.url),'utf8');
+new Function(js);
+const htmlIds=new Set([...html.matchAll(/\bid=["']([^"']+)["']/g)].map(m=>m[1]));
+const referenced=[...js.matchAll(/\$\(['"]([^'"]+)['"]\)/g)].map(m=>m[1]);
+const missing=[...new Set(referenced.filter(id=>!htmlIds.has(id)))];
+if(missing.length)throw new Error(`Missing DOM ids referenced by main.js: ${missing.join(', ')}`);
+for(const required of ['canvas','sourceCanvas','prompt','generateBtn','recordBtn','controls'])if(!htmlIds.has(required))throw new Error(`Required sandbox element missing: ${required}`);
+for(const marker of ['function generateSource','function drawMath','function drawCellular','function toggleRecording','function effectiveState'])if(!js.includes(marker))throw new Error(`Core feature missing: ${marker}`);
+console.log(`Smoke OK: ${htmlIds.size} DOM ids, ${referenced.length} JS id references, generator/effects/recording present.`);
