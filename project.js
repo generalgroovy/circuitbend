@@ -1,5 +1,5 @@
 (() => {
-  const VERSION=1;
+  const VERSION=2;
   const saveBtn=document.getElementById('projectSaveBtn');
   const fileInput=document.getElementById('projectFile');
   if(!saveBtn||!fileInput)return;
@@ -9,6 +9,7 @@
     generator:{prompt:promptEl.value,seed:seedEl.value,mode:genMode.value,engine:genEngine.value,motion:genMotion.value,width:+genW.value,height:+genH.value,cell:+cellSize.value,speed:+genSpeed.value},
     effects:{base:clone(base),groupEnabled:clone(groupEnabled),rate:clone(rate),lfo:clone(lfo),fxSeed:fxSeed.value},
     transport:{master:+master.value,macroA:+macroA.value,macroB:+macroB.value,bpm:+bpm.value,quality:+quality.value},
+    advanced:window.circuitbendAdvanced?.exportState?.()||null,
     source:{kind:media==='generated'?'generated':media==='baked'?'baked':'external',bakedPng:media==='baked'&&sourceCanvas.width?sourceCanvas.toDataURL('image/png'):null}
   });
   function saveProject(){
@@ -29,7 +30,7 @@
     const g=p.generator||{},e=p.effects||{},t=p.transport||{};
     if(g.prompt!=null)promptEl.value=String(g.prompt);if(g.seed!=null)seedEl.value=String(g.seed);
     setSelect(genMode,g.mode);setSelect(genEngine,g.engine);setSelect(genMotion,g.motion);
-    if(Number.isFinite(+g.width))genW.value=clamp(+g.width,64,1024);if(Number.isFinite(+g.height))genH.value=clamp(+g.height,64,1024);
+    if(Number.isFinite(+g.width))genW.value=clamp(+g.width,64,4096);if(Number.isFinite(+g.height))genH.value=clamp(+g.height,64,4096);
     if(Number.isFinite(+g.cell))cellSize.value=clamp(+g.cell,2,32);if(Number.isFinite(+g.speed))genSpeed.value=clamp(+g.speed,0,4);
     base={...defaults,...(e.base||{})};s={...base};groupEnabled={...groupEnabled,...(e.groupEnabled||{})};
     for(const k in rate)rate[k]=e.rate&&Number.isFinite(+e.rate[k])?+e.rate[k]:0;
@@ -37,6 +38,7 @@
     if(e.fxSeed!=null)fxSeed.value=String(e.fxSeed);
     if(Number.isFinite(+t.master))master.value=clamp(+t.master,-4,4);if(Number.isFinite(+t.macroA))macroA.value=clamp(+t.macroA,0,1);if(Number.isFinite(+t.macroB))macroB.value=clamp(+t.macroB,0,1);
     if(Number.isFinite(+t.bpm))bpm.value=clamp(+t.bpm,20,300);if(Number.isFinite(+t.quality))setSelect(quality,clamp(+t.quality,.35,1));
+    window.circuitbendAdvanced?.importState?.(p.advanced);
     syncModulationControls();
     const baked=p.source?.bakedPng;
     if(p.source?.kind==='baked'&&baked){
