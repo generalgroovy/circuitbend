@@ -19,8 +19,11 @@ for(const ref of local){
   if(!fs.existsSync(target))throw new Error(`Referenced asset missing: ${ref}`);
 }
 for(const required of ['style.css','advanced.css','main.js','project.js','advanced.js'])if(!local.includes(required))throw new Error(`GitHub Pages entrypoint does not reference ${required}`);
-for(const required of ['webview.css','webview.js','mathview.css','mathlab.js'])if(!fs.existsSync(path.join(root,required)))throw new Error(`Enhanced web asset missing: ${required}`);
+for(const required of ['webview.css','webview.js','mathview.css','mathlab.js','streamlined.css','streamlined.js'])if(!fs.existsSync(path.join(root,required)))throw new Error(`Enhanced web asset missing: ${required}`);
 if(!/webview\.css/.test(advancedCss)||!/mathview\.css/.test(advancedCss)||/url\(["']?\//.test(advancedCss))throw new Error('advanced.css must import compact/math styles with relative Pages-safe URLs');
 if(!/s\.src=['"]webview\.js['"]/.test(projectJs))throw new Error('project.js must load webview.js with a relative Pages-safe URL');
 if(!/m\.src=['"]mathlab\.js['"]/.test(projectJs))throw new Error('project.js must load mathlab.js with a relative Pages-safe URL');
-console.log(`Pages OK: ${local.length} entry assets plus compact webview and Math Lab assets resolve under the repository subpath.`);
+if(!/w\.src=['"]streamlined\.js['"]/.test(projectJs))throw new Error('project.js must load streamlined.js with a relative Pages-safe URL');
+const streamlined=fs.readFileSync(path.join(root,'streamlined.js'),'utf8');
+if(!/l\.href=['"]streamlined\.css['"]/.test(streamlined))throw new Error('streamlined.js must load streamlined.css with a relative Pages-safe URL');
+console.log(`Pages OK: ${local.length} entry assets plus compact, Math Lab and streamlined workspace assets resolve under the repository subpath.`);
