@@ -19,7 +19,8 @@ for(const ref of local){
   if(!fs.existsSync(target))throw new Error(`Referenced asset missing: ${ref}`);
 }
 for(const required of ['style.css','advanced.css','main.js','project.js','advanced.js'])if(!local.includes(required))throw new Error(`GitHub Pages entrypoint does not reference ${required}`);
-for(const required of ['webview.css','webview.js'])if(!fs.existsSync(path.join(root,required)))throw new Error(`Compact web asset missing: ${required}`);
-if(!/webview\.css/.test(advancedCss)||/url\(["']?\//.test(advancedCss))throw new Error('advanced.css must import webview.css with a relative Pages-safe URL');
+for(const required of ['webview.css','webview.js','mathview.css','mathlab.js'])if(!fs.existsSync(path.join(root,required)))throw new Error(`Enhanced web asset missing: ${required}`);
+if(!/webview\.css/.test(advancedCss)||!/mathview\.css/.test(advancedCss)||/url\(["']?\//.test(advancedCss))throw new Error('advanced.css must import compact/math styles with relative Pages-safe URLs');
 if(!/s\.src=['"]webview\.js['"]/.test(projectJs))throw new Error('project.js must load webview.js with a relative Pages-safe URL');
-console.log(`Pages OK: ${local.length} entry assets plus compact webview.css/webview.js resolve under the repository subpath.`);
+if(!/m\.src=['"]mathlab\.js['"]/.test(projectJs))throw new Error('project.js must load mathlab.js with a relative Pages-safe URL');
+console.log(`Pages OK: ${local.length} entry assets plus compact webview and Math Lab assets resolve under the repository subpath.`);

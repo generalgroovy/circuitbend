@@ -1,5 +1,5 @@
 (() => {
-  const VERSION=3;
+  const VERSION=4;
   const saveBtn=document.getElementById('projectSaveBtn');
   const fileInput=document.getElementById('projectFile');
   if(!saveBtn||!fileInput)return;
@@ -11,6 +11,7 @@
     transport:{master:+master.value,macroA:+macroA.value,macroB:+macroB.value,bpm:+bpm.value,quality:+quality.value},
     advanced:window.circuitbendAdvanced?.exportState?.()||null,
     webview:window.circuitbendWebview?.exportState?.()||null,
+    mathview:window.circuitbendMath?.exportState?.()||null,
     source:{kind:media==='generated'?'generated':media==='baked'?'baked':'external',bakedPng:media==='baked'&&sourceCanvas.width?sourceCanvas.toDataURL('image/png'):null}
   });
   function saveProject(){
@@ -41,6 +42,7 @@
     if(Number.isFinite(+t.bpm))bpm.value=clamp(+t.bpm,20,300);if(Number.isFinite(+t.quality))setSelect(quality,clamp(+t.quality,.35,1));
     window.circuitbendAdvanced?.importState?.(p.advanced);
     window.circuitbendWebview?.importState?.(p.webview);
+    window.circuitbendMath?.importState?.(p.mathview);
     syncModulationControls();
     const baked=p.source?.bakedPng;
     if(p.source?.kind==='baked'&&baked){
@@ -49,5 +51,6 @@
   }
   saveBtn.addEventListener('click',saveProject);
   fileInput.addEventListener('change',async e=>{const f=e.target.files?.[0];if(!f)return;try{restoreProject(JSON.parse(await f.text()))}catch(err){console.error(err);alert(`Could not load project: ${err.message}`)}finally{e.target.value=''}});
-  window.addEventListener('load',()=>{if(document.querySelector('script[data-circuitbend-webview]'))return;const s=document.createElement('script');s.src='webview.js';s.dataset.circuitbendWebview='1';s.async=false;document.body.appendChild(s)},{once:true});
+  function loadMathLab(){if(document.querySelector('script[data-circuitbend-mathlab]'))return;const m=document.createElement('script');m.src='mathlab.js';m.dataset.circuitbendMathlab='1';m.async=false;document.body.appendChild(m)}
+  window.addEventListener('load',()=>{const existing=document.querySelector('script[data-circuitbend-webview]');if(existing){loadMathLab();return}const s=document.createElement('script');s.src='webview.js';s.dataset.circuitbendWebview='1';s.async=false;s.addEventListener('load',loadMathLab,{once:true});document.body.appendChild(s)},{once:true});
 })();
