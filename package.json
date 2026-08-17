@@ -4,7 +4,7 @@
   "private": true,
   "description": "Offline generative pixel/ASCII circuit-bending media sandbox",
   "scripts": {
-    "test": "node tests/smoke.mjs"
+    "test": "node tests/smoke.mjs && node tests/pages.mjs"
   },
   "engines": {
     "node": ">=18"
