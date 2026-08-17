@@ -37,16 +37,17 @@
     if(byId('streamBar'))return;
     const anchor=byId('webviewBar')||document.querySelector('.top');
     if(!anchor)return;
-    const bar=el('div',{id:'streamBar',class:'streamBar'});
-    bar.innerHTML=`<div class="taskTabs">${Object.entries(tasks).map(([k,v])=>`<button data-task="${k}">${v.label}</button>`).join('')}</div><div class="quickMake"><label>Engine<select id="quickEngine"></select></label><label>Mode<select id="quickMode"></select></label><label class="quickSeed">Seed<input id="quickSeed" type="text"></label><label>Cell<input id="quickCell" type="number" min="2" max="32" step="1"></label><button id="quickGenerate" class="accent">Generate</button><button id="quickVariation">Variation</button></div><div class="streamTools"><span id="streamSummary"></span><button id="previewPin" title="Keep the preview visible while scrolling">Pin preview</button><button id="focusToggle" title="Focus hides secondary controls; Full exposes the complete workstation">Focus</button><details id="moreMenu"><summary>More</summary><div id="moreActions" class="moreActions"></div></details></div>`;
+    const bar=el('div',{id:'streamBar',class:'streamBar',role:'navigation','aria-label':'Creative workflow'});
+    bar.innerHTML=`<div class="taskTabs">${Object.entries(tasks).map(([k,v])=>`<button data-task="${k}" title="Open ${v.label} tools">${v.label}</button>`).join('')}</div><div class="quickMake"><label>Engine<select id="quickEngine" aria-label="Source engine"></select></label><label>Mode<select id="quickMode" aria-label="Render mode"></select></label><label class="quickSeed">Seed<input id="quickSeed" type="text" aria-label="Seed"></label><label>Cell<input id="quickCell" type="number" min="2" max="32" step="1" aria-label="Cell or glyph size"></label><button id="quickGenerate" class="accent" title="Generate (Ctrl/Cmd+Enter)">Generate</button><button id="quickVariation" title="Create a seed variation">Variation</button></div><div class="streamTools"><span id="streamSummary" aria-live="polite"></span><button id="previewPin" title="Keep the preview visible while scrolling">Pin preview</button><button id="focusToggle" title="Focus hides secondary controls; Full exposes the complete workstation">Focus</button><details id="moreMenu"><summary>More</summary><div id="moreActions" class="moreActions"></div></details></div>`;
     anchor.after(bar);
   }
 
   function copySelectOptions(from,to){
     if(!from||!to)return;
+    const current=from.value;
     to.innerHTML='';
     [...from.children].forEach(child=>to.appendChild(child.cloneNode(true)));
-    to.value=from.value;
+    to.value=current;
   }
 
   function wireProxy(proxy,source,type='change'){
@@ -78,6 +79,7 @@
     for(const id of ids){const n=byId(id);if(n)box.appendChild(n)}
     const projectFile=byId('projectFile')?.closest('label');if(projectFile)box.appendChild(projectFile);
     const browserSave=byId('savePresetBtn'),browserLoad=byId('loadPresetBtn');if(browserSave)box.appendChild(browserSave);if(browserLoad)box.appendChild(browserLoad);
+    box.addEventListener('click',e=>{if(e.target.closest('button,.filebtn')){const menu=byId('moreMenu');if(menu)menu.open=false}});
   }
 
   function setDetails(openIds=[]){
@@ -91,28 +93,30 @@
     if(!tasks[task])task='create';
     state.task=task;
     document.body.dataset.task=task;
-    legacyTab(tasks[task].legacy);
-    document.querySelectorAll('[data-task]').forEach(b=>b.classList.toggle('active',b.dataset.task===task));
-    if(task==='create')setDetails([]);
-    else if(task==='math')setDetails(['mathLab']);
-    else if(task==='style')setDetails(['artLab']);
-    else if(task==='export')setDetails([]);
-    if(task==='math')byId('mathLab')?.scrollIntoView({block:'nearest'});
-    if(task==='style')byId('artLab')?.scrollIntoView({block:'nearest'});
+    legacyTab(state.focus?tasks[task].legacy:'all');
+    document.querySelectorAll('[data-task]').forEach(b=>{const active=b.dataset.task===task;b.classList.toggle('active',active);b.setAttribute('aria-current',active?'page':'false')});
+    if(state.focus){
+      if(task==='create')setDetails([]);
+      else if(task==='math')setDetails(['mathLab']);
+      else if(task==='style')setDetails(['artLab']);
+      else if(task==='export')setDetails([]);
+      if(task==='math')byId('mathLab')?.scrollIntoView({block:'nearest'});
+      if(task==='style')byId('artLab')?.scrollIntoView({block:'nearest'});
+    }
     saveLocal();updateSummary();
   }
 
   function applyFocus(){
     document.body.classList.toggle('streamFocus',!!state.focus);
     document.body.classList.toggle('streamFull',!state.focus);
-    const b=byId('focusToggle');if(b){b.textContent=state.focus?'Focus':'Full';b.classList.toggle('active',state.focus)}
-    if(state.focus)setTask(state.task);else legacyTab('all');
+    const b=byId('focusToggle');if(b){b.textContent=state.focus?'Focus':'Full';b.classList.toggle('active',state.focus);b.setAttribute('aria-pressed',String(state.focus))}
+    setTask(state.task);
     saveLocal();
   }
 
   function applyPreviewPin(){
     document.body.classList.toggle('previewPinned',!!state.previewPinned);
-    const b=byId('previewPin');if(b){b.classList.toggle('active',state.previewPinned);b.textContent=state.previewPinned?'Preview pinned':'Pin preview'}
+    const b=byId('previewPin');if(b){b.classList.toggle('active',state.previewPinned);b.textContent=state.previewPinned?'Preview pinned':'Pin preview';b.setAttribute('aria-pressed',String(state.previewPinned))}
     saveLocal();
   }
 
@@ -127,8 +131,20 @@
     const fxTitle=document.querySelector('.panel .sectionTitle span');if(fxTitle)fxTitle.textContent='presets';
   }
 
+  function bindKeyboard(){
+    document.addEventListener('keydown',e=>{
+      const tag=e.target?.tagName;if(tag==='INPUT'||tag==='TEXTAREA'||tag==='SELECT'){
+        if((e.ctrlKey||e.metaKey)&&e.key==='Enter'){e.preventDefault();click('generateBtn')}
+        return;
+      }
+      if((e.ctrlKey||e.metaKey)&&e.key==='Enter'){e.preventDefault();click('generateBtn');return}
+      if(e.altKey&&/^[1-5]$/.test(e.key)){e.preventDefault();setTask(Object.keys(tasks)[Number(e.key)-1]);return}
+      if(e.key==='Escape'){const menu=byId('moreMenu');if(menu?.open)menu.open=false}
+    });
+  }
+
   function bind(){
-    loadLocal();injectStyles();buildTaskbar();buildQuickControls();moveSecondaryActions();simplifyLabels();
+    loadLocal();injectStyles();buildTaskbar();buildQuickControls();moveSecondaryActions();simplifyLabels();bindKeyboard();
     document.querySelectorAll('[data-task]').forEach(b=>b.addEventListener('click',()=>setTask(b.dataset.task)));
     byId('focusToggle')?.addEventListener('click',()=>{state.focus=!state.focus;applyFocus()});
     byId('previewPin')?.addEventListener('click',()=>{state.previewPinned=!state.previewPinned;applyPreviewPin()});
@@ -138,7 +154,7 @@
     applyPreviewPin();applyFocus();updateSummary();
     window.circuitbendWorkspace={
       exportState:()=>({...state}),
-      importState:x=>{if(!x)return;Object.assign(state,x);applyPreviewPin();applyFocus();setTask(state.task)},
+      importState:x=>{if(!x)return;Object.assign(state,x);applyPreviewPin();applyFocus()},
       setTask,
       setFocus:value=>{state.focus=!!value;applyFocus()}
     };
