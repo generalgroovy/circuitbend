@@ -1,5 +1,5 @@
 (() => {
-  const VERSION=4;
+  const VERSION=5;
   const saveBtn=document.getElementById('projectSaveBtn');
   const fileInput=document.getElementById('projectFile');
   if(!saveBtn||!fileInput)return;
@@ -12,6 +12,7 @@
     advanced:window.circuitbendAdvanced?.exportState?.()||null,
     webview:window.circuitbendWebview?.exportState?.()||null,
     mathview:window.circuitbendMath?.exportState?.()||null,
+    workspace:window.circuitbendWorkspace?.exportState?.()||null,
     source:{kind:media==='generated'?'generated':media==='baked'?'baked':'external',bakedPng:media==='baked'&&sourceCanvas.width?sourceCanvas.toDataURL('image/png'):null}
   });
   function saveProject(){
@@ -43,6 +44,7 @@
     window.circuitbendAdvanced?.importState?.(p.advanced);
     window.circuitbendWebview?.importState?.(p.webview);
     window.circuitbendMath?.importState?.(p.mathview);
+    window.circuitbendWorkspace?.importState?.(p.workspace);
     syncModulationControls();
     const baked=p.source?.bakedPng;
     if(p.source?.kind==='baked'&&baked){
@@ -51,6 +53,11 @@
   }
   saveBtn.addEventListener('click',saveProject);
   fileInput.addEventListener('change',async e=>{const f=e.target.files?.[0];if(!f)return;try{restoreProject(JSON.parse(await f.text()))}catch(err){console.error(err);alert(`Could not load project: ${err.message}`)}finally{e.target.value=''}});
-  function loadMathLab(){if(document.querySelector('script[data-circuitbend-mathlab]'))return;const m=document.createElement('script');m.src='mathlab.js';m.dataset.circuitbendMathlab='1';m.async=false;document.body.appendChild(m)}
+  function loadStreamlined(){if(document.querySelector('script[data-circuitbend-streamlined]'))return;const w=document.createElement('script');w.src='streamlined.js';w.dataset.circuitbendStreamlined='1';w.async=false;document.body.appendChild(w)}
+  function loadMathLab(){
+    const existing=document.querySelector('script[data-circuitbend-mathlab]');
+    if(existing){if(window.circuitbendMath)loadStreamlined();else existing.addEventListener('load',loadStreamlined,{once:true});return}
+    const m=document.createElement('script');m.src='mathlab.js';m.dataset.circuitbendMathlab='1';m.async=false;m.addEventListener('load',loadStreamlined,{once:true});document.body.appendChild(m)
+  }
   window.addEventListener('load',()=>{const existing=document.querySelector('script[data-circuitbend-webview]');if(existing){loadMathLab();return}const s=document.createElement('script');s.src='webview.js';s.dataset.circuitbendWebview='1';s.async=false;s.addEventListener('load',loadMathLab,{once:true});document.body.appendChild(s)},{once:true});
 })();
