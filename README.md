@@ -2,6 +2,8 @@
 
 A dependency-free browser playground for generating, animating, circuit-bending, and exporting visual media.
 
+**Live app:** https://generalgroovy.github.io/circuitbend/
+
 Everything runs locally in the browser. There is no build step, server requirement, API key, model download, or cloud dependency.
 
 ## What it does
@@ -93,20 +95,27 @@ The same prompt/seed/settings produce stable procedural structure. Animated rand
 - **PNG** — current processed frame.
 - **ASCII** — text representation of the current source/output.
 - **Record WebM** — records the processed canvas using `MediaRecorder` and `canvas.captureStream()` when supported by the browser.
+- **Project JSON** — portable generator, effect rack, automation, timing and quality state. Baked still sources are embedded as PNG data.
 
 Recording contains the visual canvas only; audio is intentionally not captured.
 
-## Presets and snapshots
+## Presets, snapshots and project files
 
 Built-in FX scenes include Clean, Xerox, Neon, Acid, CCTV, Mosh, ASCII, Thermal, Poster, Fracture, Ritual, Dirty VHS, Databend, Feedback, Terminal and Dream.
 
 **Save snapshot** stores the current FX/generator state in browser `localStorage`. **Load snapshot** restores it. **Undo** keeps an in-memory history for parameter and scene changes during the current page session.
 
+Use **Project JSON** to download a portable `.json` project and **Load project** to restore it later or in another browser. Project files include prompt/seed, generator mode and dimensions, rack values, rack bypasses, rate/LFO automation, master/macros/BPM, quality and FX seed. A baked still source is embedded in the project. Original imported image/video files are intentionally not embedded; reload those separately when needed.
+
 ## Run
 
-The simplest option is to open `index.html` in a modern browser.
+Use the published GitHub Pages app:
 
-A local static server is recommended for consistent browser behavior:
+```text
+https://generalgroovy.github.io/circuitbend/
+```
+
+Or open `index.html` directly in a modern browser. A local static server is recommended for consistent browser behavior:
 
 ```bash
 python -m http.server 8080
@@ -114,7 +123,15 @@ python -m http.server 8080
 
 Then open `http://localhost:8080`.
 
-No npm install is required.
+No npm install is required to run the app. Node is only used for repository smoke tests.
+
+## Test
+
+```bash
+npm test
+```
+
+The dependency-free test suite checks JavaScript parsing, JavaScript-to-DOM references, core generator/effect/recording/project features, and GitHub Pages-safe relative asset paths.
 
 ## Keyboard shortcuts
 
@@ -135,6 +152,8 @@ The app deliberately remains small and hackable:
 - `index.html` — workstation UI.
 - `style.css` — responsive sandbox layout.
 - `main.js` — generator, source handling, animation loop, effect rack, automation, recording and export.
+- `project.js` — portable project import/export.
+- `tests/` — dependency-free smoke and GitHub Pages compatibility tests.
 
 The processing path is:
 
@@ -149,7 +168,9 @@ print / optical / temporal effects
         ↓
 preview canvas
         ├─ PNG
+        ├─ ASCII
         ├─ WebM
+        ├─ project JSON
         └─ bake back to source
 ```
 
@@ -175,5 +196,4 @@ The current architecture is ready for further slices such as:
 - GIF/APNG export
 - optional WebGL shader effects
 - optional local image-model adapter while retaining the procedural offline fallback
-- project files containing source, prompt, seeds, effect rack and automation
 - MIDI/OSC input for live visual performance
