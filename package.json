@@ -1,0 +1,12 @@
+{
+  "name": "circuitbend-sandbox",
+  "version": "0.3.0",
+  "private": true,
+  "description": "Offline generative pixel/ASCII circuit-bending media sandbox",
+  "scripts": {
+    "test": "node tests/smoke.mjs && node tests/pages.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

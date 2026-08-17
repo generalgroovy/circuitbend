@@ -3,76 +3,197 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Circuitbend Media Lab</title>
+<meta name="color-scheme" content="dark">
+<title>Circuitbend Sandbox</title>
 <link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="advanced.css">
 </head>
 <body>
 <div class="app" id="app">
 <header class="top">
-  <div>
-    <h1>Circuitbend Media Lab</h1>
-    <div class="sub">Video loops, images export as still PNG pictures, all effect controls visible, fullscreen capable.</div>
+  <div class="brand">
+    <h1>Circuitbend Sandbox</h1>
+    <div class="sub">Build reference sources, generate pixel/ASCII art, layer media, scale the canvas, bend effects, automate parameters, and export — locally in your browser.</div>
   </div>
   <div class="actions">
     <label class="filebtn">Open media<input id="file" type="file" accept="video/*,image/*"></label>
     <button id="playBtn">Play/Pause</button>
     <button id="fullBtn">Fullscreen</button>
-    <button id="resetBtn">Reset</button>
-    <button id="randomBtn">Random</button>
+    <button id="undoBtn" title="Restore the previous parameter state">Undo</button>
+    <button id="resetBtn">Reset FX</button>
+    <button id="randomBtn">Mutate</button>
     <button id="chaosBtn">Chaos</button>
-    <button id="snapBtn">Export PNG</button>
+    <button id="snapBtn">PNG</button>
+    <button id="exportFullBtn" title="Render and export at the full source resolution">Full-res PNG</button>
+    <button id="recordBtn">Record WebM</button>
+    <button id="projectSaveBtn" title="Download a portable Circuitbend project JSON">Project JSON</button>
+    <label class="filebtn">Load project<input id="projectFile" type="file" accept="application/json,.json"></label>
   </div>
 </header>
 <main class="main">
   <section class="stage">
+    <div class="generator card">
+      <div class="sectionTitle"><strong>1. Source</strong><span>prompt, reference patterns, imported media and reusable source presets</span></div>
+      <textarea id="prompt" rows="2" spellcheck="false" placeholder="Describe structure, palette or text; e.g. neon circuit city, calibration grid, concentric rings, glyph sheet, sprite icons"></textarea>
+      <div class="sourcePresetRow">
+        <select id="sourcePreset" title="Reusable general-purpose source/reference material">
+          <option value="">Reference / source preset…</option>
+          <option value="calibration">Calibration card</option>
+          <option value="checker">Checkerboard</option>
+          <option value="ramp">Gradient ramp</option>
+          <option value="radial">Radial resolution</option>
+          <option value="geometry">Geometry sheet</option>
+          <option value="glyphs">Glyph / text sheet</option>
+          <option value="scope">Wave / scope</option>
+          <option value="mandala">Mandala / symmetry</option>
+          <option value="texture">Noise / texture</option>
+          <option value="sprite">Sprite primitives</option>
+          <option value="moire">Moiré field</option>
+          <option value="tiles">Tile reference</option>
+        </select>
+        <button id="sourcePresetBtn" class="accent">Apply source preset</button>
+        <span class="hint">Reference presets are deterministic and useful for testing effects, palettes, scaling and export.</span>
+      </div>
+      <div class="genGrid">
+        <label>Render mode<select id="genMode"><option value="pixel">Pixel</option><option value="ascii">ASCII</option><option value="hybrid">Hybrid</option></select></label>
+        <label>Source engine<select id="genEngine"><option value="math">Math field</option><option value="cellular">Cellular</option><option value="reference">Imported reference</option><option value="gradient">Gradient / ramp</option><option value="primitives">Geometry / sprites</option><option value="calibration">Calibration / test card</option><option value="waveform">Waveform / scope</option><option value="mandala">Mandala / radial</option><option value="textsheet">Text / glyph sheet</option><option value="noise">Noise / texture</option></select></label>
+        <label>Motion<select id="genMotion"><option value="drift">Drift</option><option value="pulse">Pulse</option><option value="orbit">Orbit</option><option value="wave">Wave</option><option value="static">Static</option></select></label>
+        <label>Seed<input id="seed" type="text" value="circuitbend"></label>
+        <label>Width<input id="genW" type="number" min="64" max="4096" step="16" value="512"></label>
+        <label>Height<input id="genH" type="number" min="64" max="4096" step="16" value="512"></label>
+        <label>Cell / glyph size<input id="cellSize" type="number" min="2" max="32" value="8"></label>
+        <label>Motion speed<input id="genSpeed" type="number" min="0" max="4" step=".05" value="1"></label>
+      </div>
+
+      <details class="advancedSection" open>
+        <summary>2. Canvas &amp; output scale</summary>
+        <div class="advancedBody">
+          <div class="sizeRow">
+            <select id="sizePreset" title="Set a common source canvas size">
+              <option value="custom">Custom size</option>
+              <option value="256x256">256 × 256</option>
+              <option value="512x512">512 × 512</option>
+              <option value="1024x1024">1024 × 1024</option>
+              <option value="2048x2048">2048 × 2048</option>
+              <option value="4096x4096">4096 × 4096</option>
+              <option value="1280x720">HD 1280 × 720</option>
+              <option value="1920x1080">Full HD 1920 × 1080</option>
+              <option value="3840x2160">4K 3840 × 2160</option>
+              <option value="1080x1920">Portrait 1080 × 1920</option>
+              <option value="1080x1080">Square 1080 × 1080</option>
+              <option value="2480x3508">A4-ish 2480 × 3508</option>
+            </select>
+            <label class="inlineCheck"><input id="aspectLock" type="checkbox">Lock aspect</label>
+            <label>Live effect budget<select id="renderBudget"><option value="0.5">0.5 MP</option><option value="1">1 MP</option><option value="2" selected>2 MP</option><option value="4">4 MP</option><option value="8">8 MP</option><option value="17">17 MP</option></select></label>
+            <label>Preview zoom<input id="previewZoom" type="range" min="25" max="200" step="5" value="100"></label>
+            <label class="inlineCheck"><input id="pixelPreview" type="checkbox">Pixel-crisp preview</label>
+            <span id="resolutionReadout" class="resolutionReadout">source 0×0 · live 0×0</span>
+          </div>
+          <div class="promptTips">Source size is independent from live effect resolution. Increase the source for large exports; lower the live pixel budget while designing, then use <strong>Full-res PNG</strong> for a final still.</div>
+        </div>
+      </details>
+
+      <details class="advancedSection" open>
+        <summary>3. Palette &amp; imported-media layer</summary>
+        <div class="advancedBody">
+          <div class="advancedGrid">
+            <label>Palette<select id="paletteMode"><option value="auto">Prompt / auto</option><option value="mono">Monochrome</option><option value="warm">Warm</option><option value="cool">Cool</option><option value="neon">Neon</option><option value="earth">Earth</option><option value="game">Game palette</option><option value="rgb">RGB reference</option><option value="pastel">Pastel</option><option value="custom">Custom colors</option></select></label>
+            <label>Hue shift<input id="paletteShift" type="number" min="-360" max="360" step="1" value="0"></label>
+            <label class="inlineCheck"><input id="overlayEnabled" type="checkbox">Layer imported media</label>
+            <label>Blend<select id="overlayBlend"><option value="source-over">Normal</option><option value="screen">Screen</option><option value="multiply">Multiply</option><option value="overlay">Overlay</option><option value="difference">Difference</option><option value="exclusion">Exclusion</option><option value="lighten">Lighten</option><option value="darken">Darken</option></select></label>
+            <label>Opacity<input id="overlayOpacity" type="range" min="0" max="1" step=".01" value=".5"></label>
+            <label>Fit<select id="overlayFit"><option value="cover">Cover</option><option value="contain">Contain</option><option value="stretch">Stretch</option><option value="native">Native pixels</option></select></label>
+            <label>Layer scale<input id="overlayScale" type="number" min=".1" max="4" step=".05" value="1"></label>
+            <label>Rotation<input id="overlayRotate" type="number" min="-180" max="180" step="1" value="0"></label>
+            <label>Pan X<input id="overlayX" type="number" min="-4096" max="4096" step="1" value="0"></label>
+            <label>Pan Y<input id="overlayY" type="number" min="-4096" max="4096" step="1" value="0"></label>
+            <div class="paletteSwatches" title="Used when Palette is Custom"><input id="palette1" type="color" value="#081018"><input id="palette2" type="color" value="#22d3ee"><input id="palette3" type="color" value="#a855f7"><input id="palette4" type="color" value="#f8fafc"></div>
+          </div>
+          <div class="promptTips">Load an image or video once, switch back to a generated source, then enable <strong>Layer imported media</strong> to composite it over any procedural/reference source.</div>
+        </div>
+      </details>
+
+      <div class="genActions">
+        <button id="generateBtn" class="accent">Generate / Refresh</button>
+        <button id="variationBtn">Seed variation</button>
+        <button id="asciiBtn">Export ASCII</button>
+        <button id="useOutputBtn" title="Freeze the processed output and use it as the next source">Bake output → source</button>
+      </div>
+      <div class="promptTips">Prompt words still influence procedural structure. General source engines can also be configured directly, so useful output no longer depends on knowing specific keywords.</div>
+    </div>
     <div id="drop" class="drop">
-      <strong>Drop picture or video here</strong>
-      <span class="hint">Pictures stay pictures: export returns PNG. Videos loop in the preview; export captures the current processed frame.</span>
+      <strong>Drop an image or video here</strong>
+      <span class="hint">Use it directly as the source, choose Imported reference, or layer it over a generated source with blend/opacity/fit/transform controls.</span>
     </div>
     <div class="preview">
       <video id="video" loop muted playsinline></video>
       <img id="image" alt="Uploaded source">
+      <canvas id="sourceCanvas"></canvas>
       <canvas id="canvas"></canvas>
-      <div id="placeholder" class="placeholder">No media loaded.</div>
+      <div id="placeholder" class="placeholder">Generate a source, apply a reference preset, or load media.</div>
     </div>
     <div class="status">
       <div class="read" id="readout">Waiting…</div>
-      <div>
-        <span class="pill">still image output</span>
-        <span class="pill">creative glitch suite</span>
-        <span class="pill">all controls visible</span>
+      <div class="statusActions">
+        <span class="pill" id="seedRead">seed</span>
+        <span class="pill" id="fpsRead">0 fps</span>
+        <span class="pill" id="recordRead">idle</span>
       </div>
     </div>
   </section>
   <aside class="panel">
-    <div class="presets">
+    <div class="presets cardless">
+      <div class="sectionTitle"><strong>4. FX scenes</strong><span>starting points; each rack remains configurable</span></div>
       <div class="presetGrid">
-        <button data-preset="clean">Clean</button>
-        <button data-preset="xerox">Xerox</button>
-        <button data-preset="neon">Neon</button>
-        <button data-preset="acid">Acid</button>
-        <button data-preset="cctv">CCTV</button>
-        <button data-preset="mosh">Mosh</button>
-        <button data-preset="ascii">ASCII</button>
-        <button data-preset="thermal">Thermal</button>
-        <button data-preset="poster">Poster</button>
-        <button data-preset="fracture">Fracture</button>
-        <button data-preset="ritual">Ritual</button>
-        <button data-preset="dirty">Dirty VHS</button>
+        <button data-preset="clean">Clean</button><button data-preset="xerox">Xerox</button><button data-preset="neon">Neon</button><button data-preset="acid">Acid</button>
+        <button data-preset="cctv">CCTV</button><button data-preset="mosh">Mosh</button><button data-preset="ascii">ASCII</button><button data-preset="thermal">Thermal</button>
+        <button data-preset="poster">Poster</button><button data-preset="fracture">Fracture</button><button data-preset="ritual">Ritual</button><button data-preset="dirty">Dirty VHS</button>
+        <button data-preset="databend">Databend</button><button data-preset="feedback">Feedback</button><button data-preset="terminal">Terminal</button><button data-preset="dream">Dream</button>
       </div>
     </div>
     <div class="global">
-      <label>Master<input id="master" type="range" min="-4" max="4" step=".01" value="1"></label>
+      <label>Master automation speed<input id="master" type="range" min="-4" max="4" step=".01" value="1"></label>
       <label>Macro A<input id="macroA" type="range" min="0" max="1" step=".001" value="0"></label>
       <label>Macro B<input id="macroB" type="range" min="0" max="1" step=".001" value="0"></label>
       <label>BPM<input id="bpm" type="number" min="20" max="300" value="120"></label>
-      <button id="stillBtn">Still image mode</button>
-      <button id="reflowBtn" onclick="window.dispatchEvent(new Event('resize'))">Fit preview</button>
+      <label>FX seed<input id="fxSeed" type="text" value="fx"></label>
+      <label>Live quality<select id="quality"><option value="1">Full</option><option value="0.75" selected>Balanced</option><option value="0.5">Fast</option><option value="0.35">Draft</option></select></label>
+      <button id="stillBtn">Freeze animation</button>
+      <button id="reflowBtn">Fit preview</button>
+      <button id="savePresetBtn">Save browser snapshot</button>
+      <button id="loadPresetBtn">Load browser snapshot</button>
+    </div>
+
+    <div class="configurator">
+      <h3>5. Effect configuration</h3>
+      <div class="configRow">
+        <select id="configMode" title="Simple hides automation rows; Expert shows every rate/LFO/sweep control"><option value="simple">Simple controls</option><option value="expert" selected>Expert automation</option></select>
+        <input id="effectSearch" type="search" placeholder="Find effect…">
+        <button id="expandRacksBtn">Expand racks</button>
+        <button id="collapseRacksBtn">Fold racks</button>
+      </div>
+      <div class="configRow">
+        <input id="userPresetName" type="text" placeholder="Preset name">
+        <button id="userPresetSave">Save user preset</button>
+        <select id="userPresetSelect"><option value="">User preset…</option></select>
+        <button id="userPresetApply">Apply</button>
+        <button id="userPresetDelete">Delete</button>
+      </div>
+      <div id="activeEffects" class="activeEffects"><span class="effectChip muted">No active FX</span></div>
+    </div>
+
+    <div class="layerTools">
+      <span>Effect rack</span>
+      <button id="disableAllBtn">Bypass all</button>
+      <button id="enableAllBtn">Enable all</button>
+      <span class="rackHint">Every rack now has Random, Reset, Copy, Paste and Fold actions. Every numeric effect has both a slider and exact number input. Expert mode exposes rate/LFO/sweep automation.</span>
     </div>
     <div class="controls" id="controls"></div>
   </aside>
 </main>
 </div>
 <script src="main.js"></script>
+<script src="project.js"></script>
+<script src="advanced.js"></script>
 </body>
 </html>
