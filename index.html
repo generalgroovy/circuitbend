@@ -3,71 +3,99 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Circuitbend Media Lab</title>
+<meta name="color-scheme" content="dark">
+<title>Circuitbend Sandbox</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <div class="app" id="app">
 <header class="top">
-  <div>
-    <h1>Circuitbend Media Lab</h1>
-    <div class="sub">Video loops, images export as still PNG pictures, all effect controls visible, fullscreen capable.</div>
+  <div class="brand">
+    <h1>Circuitbend Sandbox</h1>
+    <div class="sub">Generate pixel/ASCII art, animate it, bend images or video, automate effects, and record the canvas — locally in your browser.</div>
   </div>
   <div class="actions">
     <label class="filebtn">Open media<input id="file" type="file" accept="video/*,image/*"></label>
     <button id="playBtn">Play/Pause</button>
     <button id="fullBtn">Fullscreen</button>
-    <button id="resetBtn">Reset</button>
-    <button id="randomBtn">Random</button>
+    <button id="undoBtn" title="Restore the previous parameter state">Undo</button>
+    <button id="resetBtn">Reset FX</button>
+    <button id="randomBtn">Mutate</button>
     <button id="chaosBtn">Chaos</button>
-    <button id="snapBtn">Export PNG</button>
+    <button id="snapBtn">PNG</button>
+    <button id="recordBtn">Record WebM</button>
   </div>
 </header>
 <main class="main">
   <section class="stage">
+    <div class="generator card">
+      <div class="sectionTitle"><strong>Generator</strong><span>deterministic prompt + math + reference modes</span></div>
+      <textarea id="prompt" rows="2" spellcheck="false" placeholder="e.g. neon circuit city at night, recursive waves, tiny robots, violet cyan, symmetrical"></textarea>
+      <div class="genGrid">
+        <label>Mode<select id="genMode"><option value="pixel">Pixel</option><option value="ascii">ASCII</option><option value="hybrid">Hybrid</option></select></label>
+        <label>Engine<select id="genEngine"><option value="math">Math field</option><option value="cellular">Cellular</option><option value="reference">Reference media</option></select></label>
+        <label>Motion<select id="genMotion"><option value="drift">Drift</option><option value="pulse">Pulse</option><option value="orbit">Orbit</option><option value="wave">Wave</option><option value="static">Static</option></select></label>
+        <label>Seed<input id="seed" type="text" value="circuitbend"></label>
+        <label>Width<input id="genW" type="number" min="64" max="1024" step="16" value="512"></label>
+        <label>Height<input id="genH" type="number" min="64" max="1024" step="16" value="512"></label>
+        <label>Cell<input id="cellSize" type="number" min="2" max="32" value="8"></label>
+        <label>Speed<input id="genSpeed" type="number" min="0" max="4" step=".05" value="1"></label>
+      </div>
+      <div class="genActions">
+        <button id="generateBtn" class="accent">Generate / Refresh</button>
+        <button id="variationBtn">Seed variation</button>
+        <button id="asciiBtn">Export ASCII</button>
+        <button id="useOutputBtn" title="Freeze the processed output and use it as the next source">Bake output → source</button>
+      </div>
+      <div class="promptTips">Prompt words influence palette and structure. Try: <code>circuit</code>, <code>city</code>, <code>forest</code>, <code>space</code>, <code>water</code>, <code>symmetry</code>, <code>rings</code>, <code>grid</code>, <code>organic</code>, <code>monochrome</code>, <code>warm</code>.</div>
+    </div>
     <div id="drop" class="drop">
-      <strong>Drop picture or video here</strong>
-      <span class="hint">Pictures stay pictures: export returns PNG. Videos loop in the preview; export captures the current processed frame.</span>
+      <strong>Drop an image or video here</strong>
+      <span class="hint">Reference mode samples imported media. Videos loop. Generated scenes and imported media share the same effect pipeline.</span>
     </div>
     <div class="preview">
       <video id="video" loop muted playsinline></video>
       <img id="image" alt="Uploaded source">
+      <canvas id="sourceCanvas"></canvas>
       <canvas id="canvas"></canvas>
-      <div id="placeholder" class="placeholder">No media loaded.</div>
+      <div id="placeholder" class="placeholder">Generate a scene or load media.</div>
     </div>
     <div class="status">
       <div class="read" id="readout">Waiting…</div>
-      <div>
-        <span class="pill">still image output</span>
-        <span class="pill">creative glitch suite</span>
-        <span class="pill">all controls visible</span>
+      <div class="statusActions">
+        <span class="pill" id="seedRead">seed</span>
+        <span class="pill" id="fpsRead">0 fps</span>
+        <span class="pill" id="recordRead">idle</span>
       </div>
     </div>
   </section>
   <aside class="panel">
-    <div class="presets">
+    <div class="presets cardless">
+      <div class="sectionTitle"><strong>FX scenes</strong><span>non-destructive parameter snapshots</span></div>
       <div class="presetGrid">
-        <button data-preset="clean">Clean</button>
-        <button data-preset="xerox">Xerox</button>
-        <button data-preset="neon">Neon</button>
-        <button data-preset="acid">Acid</button>
-        <button data-preset="cctv">CCTV</button>
-        <button data-preset="mosh">Mosh</button>
-        <button data-preset="ascii">ASCII</button>
-        <button data-preset="thermal">Thermal</button>
-        <button data-preset="poster">Poster</button>
-        <button data-preset="fracture">Fracture</button>
-        <button data-preset="ritual">Ritual</button>
-        <button data-preset="dirty">Dirty VHS</button>
+        <button data-preset="clean">Clean</button><button data-preset="xerox">Xerox</button><button data-preset="neon">Neon</button><button data-preset="acid">Acid</button>
+        <button data-preset="cctv">CCTV</button><button data-preset="mosh">Mosh</button><button data-preset="ascii">ASCII</button><button data-preset="thermal">Thermal</button>
+        <button data-preset="poster">Poster</button><button data-preset="fracture">Fracture</button><button data-preset="ritual">Ritual</button><button data-preset="dirty">Dirty VHS</button>
+        <button data-preset="databend">Databend</button><button data-preset="feedback">Feedback</button><button data-preset="terminal">Terminal</button><button data-preset="dream">Dream</button>
       </div>
     </div>
     <div class="global">
-      <label>Master<input id="master" type="range" min="-4" max="4" step=".01" value="1"></label>
+      <label>Master speed<input id="master" type="range" min="-4" max="4" step=".01" value="1"></label>
       <label>Macro A<input id="macroA" type="range" min="0" max="1" step=".001" value="0"></label>
       <label>Macro B<input id="macroB" type="range" min="0" max="1" step=".001" value="0"></label>
       <label>BPM<input id="bpm" type="number" min="20" max="300" value="120"></label>
-      <button id="stillBtn">Still image mode</button>
-      <button id="reflowBtn" onclick="window.dispatchEvent(new Event('resize'))">Fit preview</button>
+      <label>FX seed<input id="fxSeed" type="text" value="fx"></label>
+      <label>Quality<select id="quality"><option value="1">Full</option><option value="0.75" selected>Balanced</option><option value="0.5">Fast</option><option value="0.35">Draft</option></select></label>
+      <button id="stillBtn">Freeze animation</button>
+      <button id="reflowBtn">Fit preview</button>
+      <button id="savePresetBtn">Save snapshot</button>
+      <button id="loadPresetBtn">Load snapshot</button>
+    </div>
+    <div class="layerTools">
+      <span>Effect rack</span>
+      <button id="disableAllBtn">Bypass all</button>
+      <button id="enableAllBtn">Enable all</button>
+      <span class="rackHint">Each rack can be bypassed; sliders support rate, LFO and sweep automation.</span>
     </div>
     <div class="controls" id="controls"></div>
   </aside>
