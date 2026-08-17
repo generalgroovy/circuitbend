@@ -1,5 +1,5 @@
 (() => {
-  const VERSION=5;
+  const VERSION=6;
   const saveBtn=document.getElementById('projectSaveBtn');
   const fileInput=document.getElementById('projectFile');
   if(!saveBtn||!fileInput)return;
@@ -13,6 +13,7 @@
     webview:window.circuitbendWebview?.exportState?.()||null,
     mathview:window.circuitbendMath?.exportState?.()||null,
     workspace:window.circuitbendWorkspace?.exportState?.()||null,
+    viewer:window.circuitbendViewer?.exportState?.()||null,
     source:{kind:media==='generated'?'generated':media==='baked'?'baked':'external',bakedPng:media==='baked'&&sourceCanvas.width?sourceCanvas.toDataURL('image/png'):null}
   });
   function saveProject(){
@@ -45,6 +46,7 @@
     window.circuitbendWebview?.importState?.(p.webview);
     window.circuitbendMath?.importState?.(p.mathview);
     window.circuitbendWorkspace?.importState?.(p.workspace);
+    window.circuitbendViewer?.importState?.(p.viewer);
     syncModulationControls();
     const baked=p.source?.bakedPng;
     if(p.source?.kind==='baked'&&baked){
@@ -53,7 +55,12 @@
   }
   saveBtn.addEventListener('click',saveProject);
   fileInput.addEventListener('change',async e=>{const f=e.target.files?.[0];if(!f)return;try{restoreProject(JSON.parse(await f.text()))}catch(err){console.error(err);alert(`Could not load project: ${err.message}`)}finally{e.target.value=''}});
-  function loadStreamlined(){if(document.querySelector('script[data-circuitbend-streamlined]'))return;const w=document.createElement('script');w.src='streamlined.js';w.dataset.circuitbendStreamlined='1';w.async=false;document.body.appendChild(w)}
+  function loadViewer(){if(document.querySelector('script[data-circuitbend-viewer]'))return;const v=document.createElement('script');v.src='preview-window.js';v.dataset.circuitbendViewer='1';v.async=false;document.body.appendChild(v)}
+  function loadStreamlined(){
+    const existing=document.querySelector('script[data-circuitbend-streamlined]');
+    if(existing){if(window.circuitbendWorkspace)loadViewer();else existing.addEventListener('load',loadViewer,{once:true});return}
+    const w=document.createElement('script');w.src='streamlined.js';w.dataset.circuitbendStreamlined='1';w.async=false;w.addEventListener('load',loadViewer,{once:true});document.body.appendChild(w)
+  }
   function loadMathLab(){
     const existing=document.querySelector('script[data-circuitbend-mathlab]');
     if(existing){if(window.circuitbendMath)loadStreamlined();else existing.addEventListener('load',loadStreamlined,{once:true});return}
