@@ -241,6 +241,21 @@ npm test
 
 The dependency-free suite checks JavaScript parsing, JavaScript-to-DOM references, core and advanced source/scaling/configuration entry points, project import/export hooks, and GitHub Pages-safe relative asset paths.
 
+### Browser acceptance checklist
+
+After deployment, a useful manual pass is:
+
+1. Apply **Calibration card**, **Wave / scope**, **Sprite primitives** and **Noise / texture** source presets.
+2. Switch each between Pixel, ASCII and Hybrid.
+3. Set 1920×1080 and 3840×2160 while keeping Live effect budget at 1–2 MP; confirm the source/live resolution readout differs as expected.
+4. Change palettes and custom colors.
+5. Load an image, generate a procedural source, enable **Layer imported media**, and test Cover/Contain plus Screen/Difference blends.
+6. Search for an effect, edit it with the exact number input, then Random/Reset/Copy/Paste/Fold its rack.
+7. Compare Simple controls with Expert automation.
+8. Export normal PNG and Full-res PNG.
+9. Save a named user preset and a Project JSON, reload each, and verify dimensions/palette/racks return.
+10. Bake output → source and continue bending the baked result.
+
 ## Keyboard shortcuts
 
 | Key | Action |
