@@ -1,164 +1,175 @@
+/* Compact workspace. Original controls are moved, never cloned or removed. */
 (() => {
-  const byId=id=>document.getElementById(id);
-  const STORAGE='circuitbend.workspace.v1';
-  const state={focus:true,task:'create',previewPinned:true};
-  let syncing=false;
-
-  function el(tag,attrs={},html=''){
-    const n=document.createElement(tag);
-    for(const [k,v] of Object.entries(attrs)){
-      if(k==='class')n.className=v;
-      else if(k==='text')n.textContent=v;
-      else n.setAttribute(k,v);
-    }
-    if(html)n.innerHTML=html;
-    return n;
-  }
-  function loadLocal(){try{const x=JSON.parse(localStorage.getItem(STORAGE)||'null');if(x)Object.assign(state,x)}catch{}}
-  function saveLocal(){try{localStorage.setItem(STORAGE,JSON.stringify(state))}catch{}}
-  function fire(node,type='change'){node?.dispatchEvent(new Event(type,{bubbles:true}))}
-  function click(id){byId(id)?.click()}
-  function legacyTab(name){document.querySelector(`[data-webtab="${name}"]`)?.click()}
-
-  const tasks={
-    create:{legacy:'source',label:'Create'},
-    math:{legacy:'art',label:'Math'},
-    style:{legacy:'art',label:'Style'},
-    fx:{legacy:'fx',label:'FX'},
-    export:{legacy:'output',label:'Export'}
+  'use strict';
+  const byId = id => document.getElementById(id);
+  const STORAGE = 'circuitbend.workspace.v2';
+  const state = {focus: true, task: 'create', previewPinned: true};
+  const tasks = {
+    create: {legacy: 'source', label: 'Source', help: 'Open an image or video, pick a sample, or build a pattern.'},
+    math: {legacy: 'art', label: 'Math', help: 'Choose a concept. Change one variable. Watch the structure respond.'},
+    style: {legacy: 'art', label: 'Pixel / ASCII', help: 'Shape the pixels, palette and characters of a generated source.'},
+    fx: {legacy: 'fx', label: 'Effects', help: 'Try a look, then change one effect at a time. Undo is always nearby.'},
+    export: {legacy: 'output', label: 'Export', help: 'Save a still or silent clip. Save a project to keep editing later.'}
   };
-
-  function injectStyles(){
-    if(document.querySelector('link[data-circuitbend-streamlined]'))return;
-    const l=document.createElement('link');l.rel='stylesheet';l.href='streamlined.css';l.dataset.circuitbendStreamlined='1';document.head.appendChild(l);
+  let toastTimer;
+  function el(tag, attrs = {}, html = '') {
+    const node = document.createElement(tag);
+    for (const [key, value] of Object.entries(attrs)) node.setAttribute(key, value);
+    if (html) node.innerHTML = html;
+    return node;
   }
-
-  function buildTaskbar(){
-    if(byId('streamBar'))return;
-    const anchor=byId('webviewBar')||document.querySelector('.top');
-    if(!anchor)return;
-    const bar=el('div',{id:'streamBar',class:'streamBar',role:'navigation','aria-label':'Creative workflow'});
-    bar.innerHTML=`<div class="taskTabs">${Object.entries(tasks).map(([k,v])=>`<button data-task="${k}" title="Open ${v.label} tools">${v.label}</button>`).join('')}</div><div class="quickMake"><label>Engine<select id="quickEngine" aria-label="Source engine"></select></label><label>Mode<select id="quickMode" aria-label="Render mode"></select></label><label class="quickSeed">Seed<input id="quickSeed" type="text" aria-label="Seed"></label><label>Cell<input id="quickCell" type="number" min="2" max="32" step="1" aria-label="Cell or glyph size"></label><button id="quickGenerate" class="accent" title="Generate (Ctrl/Cmd+Enter)">Generate</button><button id="quickVariation" title="Create a seed variation">Variation</button></div><div class="streamTools"><span id="streamSummary" aria-live="polite"></span><button id="previewPin" title="Keep the preview visible while scrolling">Pin preview</button><button id="focusToggle" title="Focus hides secondary controls; Full exposes the complete workstation">Focus</button><details id="moreMenu"><summary>More</summary><div id="moreActions" class="moreActions"></div></details></div>`;
-    anchor.after(bar);
+  function notify(text) {
+    const node = byId('sandboxNotice');
+    if (!node) return;
+    node.textContent = text; node.hidden = false;
+    clearTimeout(toastTimer); toastTimer = setTimeout(() => {node.hidden = true;}, 5000);
   }
-
-  function copySelectOptions(from,to){
-    if(!from||!to)return;
-    const current=from.value;
-    to.innerHTML='';
-    [...from.children].forEach(child=>to.appendChild(child.cloneNode(true)));
-    to.value=current;
+  function saveLocal() {try {localStorage.setItem(STORAGE, JSON.stringify(state));} catch {}}
+  function importState(value) {
+    if (!value || typeof value !== 'object') return;
+    if (typeof value.focus === 'boolean') state.focus = value.focus;
+    if (Object.hasOwn(tasks, value.task)) state.task = value.task;
+    if (typeof value.previewPinned === 'boolean') state.previewPinned = value.previewPinned;
   }
-
-  function wireProxy(proxy,source,type='change'){
-    if(!proxy||!source)return;
-    const sourceEvent=source.tagName==='INPUT'&&source.type==='range'?'input':type;
-    proxy.addEventListener(type,()=>{
-      if(syncing)return;syncing=true;source.value=proxy.value;fire(source,sourceEvent);fire(source,'change');syncing=false;updateSummary();
+  function legacyTab(name) {document.querySelector(`[data-webtab="${name}"]`)?.click();}
+  function labelFor(id, text) {const node = byId(id); if (node) node.textContent = text;}
+  function setTask(task) {
+    if (!Object.hasOwn(tasks, task)) task = 'create';
+    state.task = task;
+    document.body.dataset.task = state.focus ? task : 'all';
+    legacyTab(state.focus ? tasks[task].legacy : 'all');
+    document.querySelectorAll('[data-task]').forEach(button => {
+      const active = state.focus && button.dataset.task === task;
+      button.classList.toggle('active', active);
+      button.setAttribute('aria-pressed', String(active));
     });
-    const sync=()=>{if(syncing)return;syncing=true;proxy.value=source.value;syncing=false;updateSummary()};
-    source.addEventListener('input',sync);source.addEventListener('change',sync);
+    byId('workspaceHelp').textContent = state.focus ? tasks[task].help : 'Every tool in one inspector. Open only the sections you need.';
+    if (task === 'math' && byId('mathLab')) byId('mathLab').open = true;
+    if (task === 'style' && byId('artLab')) byId('artLab').open = true;
+    if (task === 'export') document.querySelector('.advancedSection[data-webpanel="output"]')?.setAttribute('open', '');
+    document.querySelector('.panel')?.scrollTo({top: 0});
+    saveLocal(); updateSummary();
+    document.dispatchEvent(new Event('circuitbend:workspace'));
   }
-
-  function buildQuickControls(){
-    copySelectOptions(genEngine,byId('quickEngine'));
-    copySelectOptions(genMode,byId('quickMode'));
-    byId('quickSeed').value=seedEl.value;
-    byId('quickCell').value=cellSize.value;
-    wireProxy(byId('quickEngine'),genEngine);
-    wireProxy(byId('quickMode'),genMode);
-    wireProxy(byId('quickSeed'),seedEl,'input');
-    wireProxy(byId('quickCell'),cellSize,'input');
-    byId('quickGenerate')?.addEventListener('click',()=>click('generateBtn'));
-    byId('quickVariation')?.addEventListener('click',()=>click('variationBtn'));
-  }
-
-  function moveSecondaryActions(){
-    const box=byId('moreActions');if(!box)return;
-    const ids=['fullBtn','undoBtn','resetBtn','randomBtn','chaosBtn','exportFullBtn','projectSaveBtn'];
-    for(const id of ids){const n=byId(id);if(n)box.appendChild(n)}
-    const projectFile=byId('projectFile')?.closest('label');if(projectFile)box.appendChild(projectFile);
-    const browserSave=byId('savePresetBtn'),browserLoad=byId('loadPresetBtn');if(browserSave)box.appendChild(browserSave);if(browserLoad)box.appendChild(browserLoad);
-    box.addEventListener('click',e=>{if(e.target.closest('button,.filebtn')){const menu=byId('moreMenu');if(menu)menu.open=false}});
-  }
-
-  function setDetails(openIds=[]){
-    if(!state.focus)return;
-    document.querySelectorAll('.generator details,.panel details').forEach(d=>{if(d.id)d.open=openIds.includes(d.id)});
-    if(state.task==='style'&&byId('artLab'))byId('artLab').open=true;
-    if(state.task==='math'&&byId('mathLab'))byId('mathLab').open=true;
-  }
-
-  function setTask(task){
-    if(!tasks[task])task='create';
-    state.task=task;
-    document.body.dataset.task=task;
-    legacyTab(state.focus?tasks[task].legacy:'all');
-    document.querySelectorAll('[data-task]').forEach(b=>{const active=b.dataset.task===task;b.classList.toggle('active',active);b.setAttribute('aria-current',active?'page':'false')});
-    if(state.focus){
-      if(task==='create')setDetails([]);
-      else if(task==='math')setDetails(['mathLab']);
-      else if(task==='style')setDetails(['artLab']);
-      else if(task==='export')setDetails([]);
-      if(task==='math')byId('mathLab')?.scrollIntoView({block:'nearest'});
-      if(task==='style')byId('artLab')?.scrollIntoView({block:'nearest'});
-    }
-    saveLocal();updateSummary();
-  }
-
-  function applyFocus(){
-    document.body.classList.toggle('streamFocus',!!state.focus);
-    document.body.classList.toggle('streamFull',!state.focus);
-    const b=byId('focusToggle');if(b){b.textContent=state.focus?'Focus':'Full';b.classList.toggle('active',state.focus);b.setAttribute('aria-pressed',String(state.focus))}
+  function applyFocus() {
+    document.body.classList.toggle('streamFocus', state.focus);
+    document.body.classList.toggle('streamFull', !state.focus);
+    byId('focusToggle').classList.toggle('active', !state.focus);
+    byId('focusToggle').setAttribute('aria-pressed', String(!state.focus));
     setTask(state.task);
-    saveLocal();
   }
-
-  function applyPreviewPin(){
-    document.body.classList.toggle('previewPinned',!!state.previewPinned);
-    const b=byId('previewPin');if(b){b.classList.toggle('active',state.previewPinned);b.textContent=state.previewPinned?'Preview pinned':'Pin preview';b.setAttribute('aria-pressed',String(state.previewPinned))}
-    saveLocal();
+  function updateSummary() {
+    const node = byId('streamSummary');
+    if (node) node.textContent = media === 'image' || media === 'video' ? `${media} · ${size().join(' × ')}` : `${genEngine.value} · ${genW.value} × ${genH.value}`;
   }
-
-  function updateSummary(){
-    const n=byId('streamSummary');if(!n)return;
-    const w=+genW.value||sourceCanvas.width||0,h=+genH.value||sourceCanvas.height||0;
-    n.textContent=`${genEngine.value} · ${genMode.value} · ${w}×${h}`;
+  function moveSecondaryActions() {
+    const more = byId('moreActions');
+    for (const id of ['fullBtn', 'chaosBtn', 'savePresetBtn', 'loadPresetBtn']) {
+      const node = byId(id); if (node) more.appendChild(node);
+    }
+    byId('chaosBtn').title = 'Advanced randomization can enable strobing and extreme effects.';
+    const actions = document.querySelector('.top .actions');
+    for (const id of ['undoBtn', 'resetBtn', 'randomBtn', 'snapBtn']) actions.appendChild(byId(id));
+    const exporter = el('section', {id: 'workspaceExport', class: 'workspaceExport'});
+    exporter.innerHTML = '<h2>Save your experiment</h2><p>Save PNG captures the preview. Full-res PNG uses the source size. Record video saves a silent clip at preview resolution.</p><div id="exportActions"></div><p>Save project keeps the editable settings. Imported files are not included: reopen the same media before loading its project.</p><div id="projectActions"></div>';
+    document.querySelector('.panel').appendChild(exporter);
+    for (const id of ['exportFullBtn', 'recordBtn', 'asciiBtn']) byId('exportActions').appendChild(byId(id));
+    for (const id of ['projectSaveBtn', 'projectFile']) {
+      const node = byId(id); byId('projectActions').appendChild(id === 'projectFile' ? node.closest('label') : node);
+    }
+    more.addEventListener('click', event => {if (event.target.closest('button')) byId('moreMenu').open = false;});
+    labelFor('randomBtn', 'Remix'); labelFor('resetBtn', 'Reset FX'); labelFor('snapBtn', 'Save PNG');
+    labelFor('generateBtn', 'Generate'); labelFor('variationBtn', 'New seed'); labelFor('useOutputBtn', 'Bake → source');
+    labelFor('projectSaveBtn', 'Save project'); labelFor('recordBtn', 'Record video');
+    document.querySelectorAll('.filebtn').forEach(node => {node.tabIndex = 0; node.setAttribute('role', 'button'); node.addEventListener('keydown', event => {if (event.key === 'Enter' || event.code === 'Space') {event.preventDefault(); event.stopPropagation(); node.querySelector('input')?.click();}});});
+    byId('undoBtn').title = 'Undo effect changes (Ctrl/Cmd+Z). Source files are not in effect history.';
+    byId('randomBtn').title = 'A restrained, non-strobing remix. Undo returns to the previous effect settings.';
   }
-
-  function simplifyLabels(){
-    const title=document.querySelector('.generator .sectionTitle');if(title){const span=title.querySelector('span');if(span)span.textContent='source and generation'}
-    const fxTitle=document.querySelector('.panel .sectionTitle span');if(fxTitle)fxTitle.textContent='presets';
+  function accessibleControls() {
+    document.querySelectorAll('[data-k]').forEach(node => {
+      const key = node.dataset.k; node.id ||= `effect-${key}`;
+      const label = node.closest('.ctrl')?.querySelector('label');
+      if (label) label.htmlFor = node.id;
+      node.setAttribute('aria-label', label?.textContent || key);
+      const number = document.querySelector(`[data-param-number="${key}"]`);
+      number?.setAttribute('aria-label', `${label?.textContent || key}: exact value`);
+    });
+    document.querySelectorAll('input[title],select[title]').forEach(node => {
+      if (!node.labels?.length && !node.hasAttribute('aria-label')) node.setAttribute('aria-label', node.title);
+    });
+    [['prompt', 'Describe a procedural source'], ['effectSearch', 'Search effects'], ['userPresetName', 'User preset name'], ['userPresetSelect', 'Saved user presets']].forEach(([id, text]) => byId(id)?.setAttribute('aria-label', text));
+    for (let i = 1; i <= 4; i++) byId(`palette${i}`)?.setAttribute('aria-label', `Custom palette color ${i}`);
   }
-
-  function bindKeyboard(){
-    document.addEventListener('keydown',e=>{
-      const tag=e.target?.tagName;if(tag==='INPUT'||tag==='TEXTAREA'||tag==='SELECT'){
-        if((e.ctrlKey||e.metaKey)&&e.key==='Enter'){e.preventDefault();click('generateBtn')}
-        return;
-      }
-      if((e.ctrlKey||e.metaKey)&&e.key==='Enter'){e.preventDefault();click('generateBtn');return}
-      if(e.altKey&&/^[1-5]$/.test(e.key)){e.preventDefault();setTask(Object.keys(tasks)[Number(e.key)-1]);return}
-      if(e.key==='Escape'){const menu=byId('moreMenu');if(menu?.open)menu.open=false}
+  function buildQuickControls() {
+    // Use the real controls, not proxies that can drift out of sync.
+    const quickMake = document.querySelector('.genGrid'); quickMake.classList.add('quickMake'); quickMake.dataset.webpanel = 'source art';
+    const useMedia = el('button', {id: 'styleImported', type: 'button'}, 'Use imported media as reference');
+    const help = el('p', {class: 'styleHelp'}, 'For an image or video, choose Use imported media as reference first. Then adjust the renderer below.');
+    const lab = byId('artLab');
+    if (lab) {lab.querySelector('summary').after(help); help.after(useMedia);}
+    useMedia.addEventListener('click', () => {
+      if (inputMedia === 'none') {notify('Open an image or video, or choose a sample first.'); return;}
+      genEngine.value = 'reference'; genMotion.value = inputMedia === 'video' ? 'drift' : 'static';
+      startGenerated(); notify('Imported media is now the generator reference.');
     });
   }
-
-  function bind(){
-    loadLocal();injectStyles();buildTaskbar();buildQuickControls();moveSecondaryActions();simplifyLabels();bindKeyboard();
-    document.querySelectorAll('[data-task]').forEach(b=>b.addEventListener('click',()=>setTask(b.dataset.task)));
-    byId('focusToggle')?.addEventListener('click',()=>{state.focus=!state.focus;applyFocus()});
-    byId('previewPin')?.addEventListener('click',()=>{state.previewPinned=!state.previewPinned;applyPreviewPin()});
-    [genEngine,genMode,genW,genH,seedEl,cellSize].forEach(n=>{n?.addEventListener('input',updateSummary);n?.addEventListener('change',()=>{copySelectOptions(genEngine,byId('quickEngine'));copySelectOptions(genMode,byId('quickMode'));byId('quickSeed').value=seedEl.value;byId('quickCell').value=cellSize.value;updateSummary()})});
-    const observer=new MutationObserver(()=>{copySelectOptions(genEngine,byId('quickEngine'));copySelectOptions(genMode,byId('quickMode'));updateSummary()});
-    observer.observe(genEngine,{childList:true,subtree:true});observer.observe(genMode,{childList:true,subtree:true});
-    applyPreviewPin();applyFocus();updateSummary();
-    window.circuitbendWorkspace={
-      exportState:()=>({...state}),
-      importState:x=>{if(!x)return;Object.assign(state,x);applyPreviewPin();applyFocus()},
-      setTask,
-      setFocus:value=>{state.focus=!!value;applyFocus()}
-    };
+  function bind() {
+    if (document.body.classList.contains('sandboxWorkspace')) return;
+    try {importState(JSON.parse(localStorage.getItem(STORAGE) || 'null'));} catch {}
+    const style = el('link', {rel: 'stylesheet', href: 'streamlined.css', 'data-circuitbend-streamlined': '1'}); document.head.appendChild(style);
+    document.body.classList.add('sandboxWorkspace');
+    const top = document.querySelector('.top');
+    document.querySelector('.brand h1').innerHTML = '<span class="brandMark" aria-hidden="true"></span><span>circuit<em>bend</em></span>'; document.querySelector('.brand h1').setAttribute('aria-label','Circuitbend');
+    document.querySelector('.generator > .sectionTitle strong').textContent = 'Generate a source';
+    document.querySelector('.generator > .sectionTitle span').textContent = 'Procedural, not AI-generated';
+    document.querySelector('.brand .sub').textContent = 'Independent signal experiments';
+    const bar = el('nav', {id: 'streamBar', class: 'streamBar', 'aria-label': 'Workspace tools'});
+    bar.innerHTML = `<div class="taskTabs">${Object.entries(tasks).map(([key, task]) => `<button type="button" data-task="${key}" aria-pressed="false">${task.label}</button>`).join('')}<button id="focusToggle" type="button" title="Show every tool in one workspace" aria-pressed="false">All tools</button></div><div class="streamTools"><span id="streamSummary"></span><details id="moreMenu"><summary>More</summary><div id="moreActions" class="moreActions"></div></details></div>`;
+    top.after(bar);
+    const panel = document.querySelector('.panel');
+    panel.prepend(document.querySelector('.generator'));
+    const help = el('p', {id: 'workspaceHelp', class: 'workspaceHelp'}); panel.prepend(help);
+    const stage = document.querySelector('.stage');
+    const tray = el('section', {class: 'sampleShelf', id: 'sampleShelf', 'aria-label': 'Built-in test media'});
+    tray.innerHTML = '<div class="shelfHeading"><h2>Test signals</h2><span>4 stills / 2 loops</span></div><div id="sampleGrid" class="sampleGrid"></div><div id="sampleDescription">Choose a sample. Your effects stay in place.</div>';
+    stage.appendChild(tray);
+    const looks = el('section', {class: 'quickLooks', 'aria-label': 'Quick effect looks'});
+    looks.innerHTML = '<span>Quick looks</span>' + ['clean','dirty','neon','poster','terminal','dream'].map(name => `<button type="button" data-look="${name}">${({clean:'Original',dirty:'VHS',neon:'Neon',poster:'Print',terminal:'Terminal',dream:'Dream'})[name]}</button>`).join('');
+    stage.appendChild(looks);
+    looks.addEventListener('click', event => {const key = event.target.dataset.look; if (key) {document.querySelector(`[data-preset="${key}"]`)?.click(); notify(`${event.target.textContent} look applied. Undo restores the previous effects.`);}});
+    const note = el('p', {class: 'sandboxHint'}, 'Source → Look → Experiment → Save. Media stays on this device.'); stage.appendChild(note);
+    drop.innerHTML = '<strong>01 / SIGNAL MONITOR</strong><span>Drop media here · or use Open media</span>';
+    drop.setAttribute('aria-label', 'Drop an image or video here, or use the Open media button');
+    const compare = el('button', {id: 'compareBtn', type: 'button', 'aria-pressed': 'false', title: 'Temporarily bypass effects without changing their values'}, 'Compare');
+    byId('playBtn').after(compare);
+    const notice = el('div', {id: 'sandboxNotice', role: 'status', 'aria-live': 'polite', hidden: ''}); document.body.appendChild(notice);
+    moveSecondaryActions(); buildQuickControls(); accessibleControls();
+    document.querySelectorAll('.generator details').forEach(node => {node.open = false;});
+    byId('configMode').value = 'simple'; byId('configMode').dispatchEvent(new Event('change', {bubbles: true}));
+    // Fold rarely needed configuration without removing any existing actions.
+    const global = document.querySelector('.global');
+    const globalDetails = el('details', {class: 'sandboxAdvanced', id: 'globalAutomation'}, '<summary>Animation, macros & performance</summary>');
+    global.before(globalDetails); globalDetails.appendChild(global);
+    const presetRow = byId('userPresetName').closest('.configRow');
+    const presetDetails = el('details', {class: 'sandboxAdvanced'}, '<summary>My effect presets</summary>');
+    presetRow.before(presetDetails); presetDetails.appendChild(presetRow);
+    byId('focusToggle').addEventListener('click', () => {state.focus = !state.focus; applyFocus();});
+    document.querySelectorAll('[data-task]').forEach(button => button.addEventListener('click', () => {state.focus = true; state.task = button.dataset.task; applyFocus();}));
+    document.addEventListener('keydown', event => {
+      if (event.defaultPrevented) return;
+      if (event.key === 'Escape') byId('moreMenu').open = false;
+      if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {event.preventDefault(); byId('generateBtn').click();}
+      if (!event.target.closest('input,textarea,select,[contenteditable="true"]') && event.altKey && /^[1-5]$/.test(event.key)) {event.preventDefault(); state.focus = true; state.task = Object.keys(tasks)[+event.key - 1]; applyFocus();}
+    });
+    document.addEventListener('pointerdown', event => {if (!byId('moreMenu').contains(event.target)) byId('moreMenu').open = false;});
+    [genEngine, genMode, genW, genH].forEach(node => node.addEventListener('change', updateSummary));
+    document.addEventListener('circuitbend:media', updateSummary);
+    window.circuitbendWorkspace = {exportState: () => ({...state}), importState: value => {importState(value); applyFocus();}, setTask: task => {state.focus = true; state.task = task; applyFocus();}, setFocus: value => {state.focus = !!value; applyFocus();}, notify};
+    applyFocus();
+    function loadSupport(name) {
+      return new Promise((resolve, reject) => {const script = el('script', {src: name}); script.onload = resolve; script.onerror = () => reject(new Error(`Could not load ${name}`)); document.body.appendChild(script);});
+    }
+    loadSupport('sandbox-runtime.js').then(() => loadSupport('sandbox-samples.js')).then(() => loadSupport('sandbox-lab.js')).then(() => loadSupport('workbench.js')).catch(error => notify(`${error.message}. Existing generators and effects are still available.`));
   }
-
-  if(document.readyState==='complete')bind();else window.addEventListener('load',bind,{once:true});
+  if (document.readyState === 'complete') bind(); else window.addEventListener('load', bind, {once: true});
 })();

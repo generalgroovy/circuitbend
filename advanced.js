@@ -118,7 +118,8 @@
   controlsAdv.previewZoom?.addEventListener('input',()=>{canvas.style.width=`${controlsAdv.previewZoom.value}%`;canvas.style.height='auto'});controlsAdv.pixelPreview?.addEventListener('change',()=>canvas.closest('.preview')?.classList.toggle('pixelPreview',controlsAdv.pixelPreview.checked));
 
   async function exportFullResolution(){
-    if(!ready)return;const [sw,sh]=size();if(!sw||!sh)return;const pixels=sw*sh;if(pixels>17e6){alert('Full-resolution export is limited to about 17 megapixels to avoid exhausting browser memory.');return}const wasPlaying=playing,oldScale=base.scale,oldSScale=s.scale,oldQ=quality.value,oldBudget=controlsAdv.renderBudget.value;playing=false;base.scale=s.scale=1;quality.value='1';controlsAdv.renderBudget.value=String(Math.max(2,Math.ceil(pixels/1e6)));drawOnce();await new Promise(resolve=>canvas.toBlob(blob=>{if(blob){const url=URL.createObjectURL(blob);download(`circuitbend-${canvas.width}x${canvas.height}.png`,url);setTimeout(()=>URL.revokeObjectURL(url),30000)}resolve()},'image/png'));base.scale=s.scale=oldScale;quality.value=oldQ;controlsAdv.renderBudget.value=oldBudget;resize();playing=wasPlaying;if(!playing)drawOnce();sync(true)
+    // The runtime owns the export transaction, including suspension and cleanup.
+    return window.circuitbendSandbox?.exportFullResolution();
   }
   controlsAdv.exportFullBtn?.addEventListener('click',exportFullResolution);
 
@@ -150,7 +151,7 @@
 
   const USER_PRESET_KEY='circuitbend.userPresets.v1';
   function readUserPresets(){try{return JSON.parse(localStorage.getItem(USER_PRESET_KEY)||'{}')||{}}catch{return{}}}
-  function writeUserPresets(v){localStorage.setItem(USER_PRESET_KEY,JSON.stringify(v));refreshUserPresets()}
+  function writeUserPresets(v){try{localStorage.setItem(USER_PRESET_KEY,JSON.stringify(v));refreshUserPresets()}catch{window.circuitbendWorkspace?.notify('Browser storage is unavailable or full. Use Save project instead.')}}
   function refreshUserPresets(){if(!controlsAdv.userPresetSelect)return;const all=readUserPresets(),old=controlsAdv.userPresetSelect.value;controlsAdv.userPresetSelect.innerHTML='<option value="">User preset…</option>';Object.keys(all).sort().forEach(name=>{const o=document.createElement('option');o.value=name;o.textContent=name;controlsAdv.userPresetSelect.appendChild(o)});if(all[old])controlsAdv.userPresetSelect.value=old}
   function saveUserPreset(){const name=(controlsAdv.userPresetName.value||'').trim();if(!name)return;const all=readUserPresets();all[name]={base:{...base},groupEnabled:{...groupEnabled},generator:{prompt:promptEl.value,seed:seedEl.value,mode:genMode.value,engine:genEngine.value,motion:genMotion.value,w:+genW.value,h:+genH.value,cell:+cellSize.value,speed:+genSpeed.value},advanced:exportAdvancedState()};writeUserPresets(all);controlsAdv.userPresetSelect.value=name}
   function applyUserPreset(){const p=readUserPresets()[controlsAdv.userPresetSelect.value];if(!p)return;pushUndo();base={...defaults,...p.base};s={...base};groupEnabled={...groupEnabled,...p.groupEnabled};if(p.generator){promptEl.value=p.generator.prompt||'';seedEl.value=p.generator.seed||seedEl.value;genMode.value=p.generator.mode||genMode.value;genEngine.value=p.generator.engine||genEngine.value;genMotion.value=p.generator.motion||genMotion.value;genW.value=p.generator.w||genW.value;genH.value=p.generator.h||genH.value;cellSize.value=p.generator.cell||cellSize.value;genSpeed.value=p.generator.speed??genSpeed.value}importAdvancedState(p.advanced);sync(true);syncNumeric();startGenerated();renderActiveEffects()}

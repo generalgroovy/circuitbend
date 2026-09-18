@@ -1,0 +1,18 @@
+/* Scene/transport structure. Colors and responsive recipe layout live in streamlined.css. */
+body.sandboxWorkspace .experimentTransport{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+body.sandboxWorkspace .transportControls,body.sandboxWorkspace .blendControls{display:flex;align-items:center;gap:7px;min-width:0}
+body.sandboxWorkspace .blendControls{margin-left:auto}
+body.sandboxWorkspace #videoSeek{flex:1 1 64px;min-width:40px;width:80px;max-width:120px}
+body.sandboxWorkspace #transportReadout{font:10px var(--mono);min-width:44px;color:var(--m)}
+body.sandboxWorkspace #fxMix{width:80px;min-width:50px}
+body.sandboxWorkspace #fxMixValue{width:30px;text-align:right;font-variant-numeric:tabular-nums}
+body.sandboxWorkspace .recipeGrid{display:grid}
+body.sandboxWorkspace .experimentSaveRow{display:flex;gap:6px;margin:8px 0;flex-wrap:wrap}
+body.sandboxWorkspace #experimentName{flex:1 1 120px;min-width:0}
+body.sandboxWorkspace .experimentSlots{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin-top:8px}
+body.sandboxWorkspace .experimentCard{min-width:0;display:grid;gap:4px}
+body.sandboxWorkspace .experimentCard [data-experiment-load]{display:grid;min-width:0;padding:4px;text-align:left;gap:5px}
+body.sandboxWorkspace .experimentCard img{width:100%;height:auto;aspect-ratio:1.6;object-fit:contain;border-radius:2px}
+body.sandboxWorkspace .experimentCard span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%}
+body.sandboxWorkspace .emptyExperiments{grid-column:1/-1}
+@media(max-width:480px){body.sandboxWorkspace .experimentSlots{grid-template-columns:repeat(2,minmax(0,1fr))}body.sandboxWorkspace .blendControls{margin-left:0}body.sandboxWorkspace #videoSeek{max-width:75px}}

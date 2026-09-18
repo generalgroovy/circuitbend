@@ -21,12 +21,19 @@ for(const ref of local){
   if(!fs.existsSync(target))throw new Error(`Referenced asset missing: ${ref}`);
 }
 for(const required of ['style.css','advanced.css','main.js','project.js','advanced.js'])if(!local.includes(required))throw new Error(`GitHub Pages entrypoint does not reference ${required}`);
-for(const required of ['webview.css','webview.js','mathview.css','mathlab.js','streamlined.css','streamlined.js','preview-window.css','preview-window.js'])if(!fs.existsSync(path.join(root,required)))throw new Error(`Enhanced web asset missing: ${required}`);
+for(const required of ['webview.css','webview.js','mathview.css','mathlab.js','streamlined.css','streamlined.js','preview-window.css','preview-window.js','sandbox-runtime.js','sandbox-samples.js','sandbox-lab.js'])if(!fs.existsSync(path.join(root,required)))throw new Error(`Enhanced web asset missing: ${required}`);
 if(!/webview\.css/.test(advancedCss)||!/mathview\.css/.test(advancedCss)||/url\(["']?\//.test(advancedCss))throw new Error('advanced.css must import compact/math styles with relative Pages-safe URLs');
 if(!/s\.src=['"]webview\.js['"]/.test(projectJs))throw new Error('project.js must load webview.js with a relative Pages-safe URL');
 if(!/m\.src=['"]mathlab\.js['"]/.test(projectJs))throw new Error('project.js must load mathlab.js with a relative Pages-safe URL');
 if(!/w\.src=['"]streamlined\.js['"]/.test(projectJs))throw new Error('project.js must load streamlined.js with a relative Pages-safe URL');
 if(!/v\.src=['"]preview-window\.js['"]/.test(projectJs))throw new Error('project.js must load preview-window.js with a relative Pages-safe URL');
-if(!/l\.href=['"]streamlined\.css['"]/.test(streamlined))throw new Error('streamlined.js must load streamlined.css with a relative Pages-safe URL');
+// Accept both DOM-property assignments and attribute-object loaders. The asset
+// contract is a relative path, not a particular local variable name.
+if(!/\bhref\s*(?:=|:)\s*['"]streamlined\.css['"]/.test(streamlined))throw new Error('streamlined.js must load streamlined.css with a relative Pages-safe URL');
 if(!/l\.href=['"]preview-window\.css['"]/.test(viewer))throw new Error('preview-window.js must load preview-window.css with a relative Pages-safe URL');
-console.log(`Pages OK: ${local.length} entry assets plus compact, Math Lab, streamlined workspace and pop-out viewer assets resolve under the repository subpath.`);
+for(const required of ['sandbox-runtime.js','sandbox-samples.js','sandbox-lab.js']){
+  if(!streamlined.includes(`loadSupport('${required}')`))throw new Error(`Workspace loader missing relative support script: ${required}`);
+  new Function(fs.readFileSync(path.join(root,required),'utf8'));
+}
+if(!fs.existsSync(path.join(root,'sandbox-lab.css')))throw new Error('Missing scene library styles');
+console.log(`Pages OK: ${local.length} entry assets plus compact, Math Lab, sandbox media/runtime and pop-out viewer assets resolve under the repository subpath.`);
