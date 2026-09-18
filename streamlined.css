@@ -1,1 +1,125 @@
-.streamBar{display:grid;grid-template-columns:auto minmax(460px,1fr) auto;align-items:center;gap:8px;padding:6px 10px;border-bottom:1px solid #243247;background:#080d15;position:sticky;top:0;z-index:60;box-shadow:0 5px 18px #0006}.taskTabs{display:flex;gap:3px}.taskTabs button,.streamTools button,.streamTools summary{font-size:10px;padding:5px 8px;white-space:nowrap}.taskTabs button.active,.streamTools button.active{border-color:#67d8ff;background:#102231;color:#c5f2ff}.quickMake{display:grid;grid-template-columns:minmax(135px,1.5fr) minmax(90px,.8fr) minmax(110px,1fr) 62px auto auto;gap:5px;align-items:end}.quickMake label{display:grid;gap:2px;font-size:8px;text-transform:uppercase;letter-spacing:.05em;color:#72869d}.quickMake input,.quickMake select{width:100%;min-width:0;height:27px;box-sizing:border-box;font-size:10px;padding:3px 5px}.quickMake button{height:27px;padding:4px 8px;font-size:10px}.streamTools{display:flex;align-items:center;justify-content:flex-end;gap:4px;min-width:0}.streamTools #streamSummary{font:9px ui-monospace,monospace;color:#7fa4bd;max-width:210px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.streamTools details{position:relative}.streamTools details>summary{cursor:pointer;list-style:none;border:1px solid #2b3545;border-radius:6px;background:#101620;color:#b7c5d7}.streamTools details>summary::-webkit-details-marker{display:none}.moreActions{position:absolute;right:0;top:calc(100% + 6px);width:230px;display:grid;grid-template-columns:1fr 1fr;gap:5px;padding:8px;border:1px solid #314259;border-radius:8px;background:#0b111b;box-shadow:0 14px 36px #000b;z-index:100}.moreActions button,.moreActions .filebtn{font-size:10px;padding:5px 6px;min-width:0}.streamFocus #webviewBar{display:none!important}.streamFocus .top{position:relative;padding:6px 10px;min-height:34px}.streamFocus .brand h1{font-size:15px;margin:0}.streamFocus .brand .sub{display:none}.streamFocus .top .actions{gap:4px;align-items:center}.streamFocus .top .actions button,.streamFocus .top .filebtn{font-size:9px;padding:4px 6px}.streamFocus .main{height:calc(100vh - 86px);min-height:0;gap:7px;padding:7px}.streamFocus .stage,.streamFocus .panel{scrollbar-width:thin}.streamFocus .generator{padding:7px}.streamFocus .sectionTitle{margin-bottom:5px}.streamFocus .sectionTitle span{font-size:9px}.streamFocus textarea#prompt{min-height:42px;max-height:64px;padding:6px}.streamFocus .sourcePresetRow{gap:4px}.streamFocus .sourcePresetRow .hint{display:none}.streamFocus .genGrid{grid-template-columns:repeat(4,minmax(85px,1fr));gap:4px}.streamFocus .genGrid label{font-size:9px;gap:3px}.streamFocus .genGrid input,.streamFocus .genGrid select{padding:4px;font-size:10px}.streamFocus .genActions{gap:4px;margin-top:5px}.streamFocus .genActions button{font-size:9px;padding:5px 7px}.streamFocus .promptTips{display:none}.streamFocus .drop{padding:5px;min-height:0;font-size:10px}.streamFocus .drop .hint{display:none}.streamFocus .preview{min-height:240px;max-height:calc(100vh - 315px);background:#03050a}.streamFocus.previewPinned .preview{position:sticky;top:48px;z-index:5}.streamFocus .preview #canvas{max-height:calc(100vh - 325px)!important;max-width:100%;width:auto!important}.streamFocus .status{padding:4px 0;font-size:9px}.streamFocus .advancedSection,.streamFocus .artLab,.streamFocus .mathLab{margin-top:5px}.streamFocus .advancedSection>summary,.streamFocus .artLab>summary,.streamFocus .mathLab>summary{padding:6px 8px;font-size:10px}.streamFocus .advancedBody,.streamFocus .artLabGrid,.streamFocus .mathBody{padding-left:8px;padding-right:8px}.streamFocus .artLabGrid{grid-template-columns:repeat(4,minmax(80px,1fr));gap:4px}.streamFocus .mathGrid{grid-template-columns:repeat(4,minmax(75px,1fr));gap:4px}.streamFocus .mathTop{gap:4px}.streamFocus .mathInfo{font-size:9px}.streamFocus .panel{padding-left:2px}.streamFocus .presetGrid{grid-template-columns:repeat(4,1fr);gap:3px}.streamFocus .presetGrid button{font-size:8px;padding:4px 3px}.streamFocus .global{display:grid;grid-template-columns:1fr 1fr;gap:4px}.streamFocus .global label{font-size:8px}.streamFocus .global button{font-size:9px;padding:4px}.streamFocus .configurator{padding:6px;margin:5px 0}.streamFocus .configurator h3{font-size:10px}.streamFocus .configRow{gap:4px;margin-top:5px}.streamFocus .configRow>*{font-size:9px;min-width:0}.streamFocus .layerTools{padding:5px;gap:4px}.streamFocus .rackHint{display:none}.streamFocus .group{margin-bottom:4px}.streamFocus .groupHead{padding:4px 5px}.streamFocus .groupHead h2{font-size:10px}.streamFocus .groupHelp{display:none}.streamFocus .ctrl{padding:3px 5px}.streamFocus .ctrlTop label,.streamFocus .paramHint{font-size:8px}.streamFocus .paramHint{display:none}.streamFocus .mini,.streamFocus .sweep{gap:2px}.streamFocus[data-task="fx"] .preview{max-height:48vh}.streamFocus[data-task="math"] #artLab,.streamFocus[data-task="style"] #mathLab{display:none!important}.streamFocus[data-task="math"] .mathLab,.streamFocus[data-task="style"] .artLab{display:block!important}.streamFocus[data-task="export"] .advancedSection[data-webpanel="output"]{display:block!important}.streamFull .streamBar{position:sticky}.streamFull .quickMake{opacity:.92}.streamFull.previewPinned .preview{position:static}.streamFull #webviewBar{position:static}.streamFull .main{height:auto!important;overflow:visible!important}.streamFull .stage,.streamFull .panel{overflow:visible!important}.streamFull .preview{position:static!important}.streamFull .moreActions{width:260px}@media(max-width:1180px){.streamBar{grid-template-columns:1fr auto}.quickMake{grid-column:1/-1;grid-row:2}.streamTools #streamSummary{display:none}.streamFocus .main{height:calc(100vh - 118px)}}@media(max-width:820px){.streamBar{position:static;display:flex;flex-wrap:wrap}.taskTabs{width:100%}.taskTabs button{flex:1}.quickMake{display:grid;width:100%;grid-template-columns:1fr 1fr 1fr}.quickMake .quickSeed{grid-column:span 2}.streamTools{width:100%;justify-content:flex-end}.streamFocus .main{height:auto;overflow:visible;grid-template-columns:1fr}.streamFocus .stage,.streamFocus .panel{overflow:visible}.streamFocus.previewPinned .preview{position:static}.streamFocus .preview,.streamFocus .preview #canvas{max-height:none!important}.streamFocus .genGrid{grid-template-columns:1fr 1fr}.streamFocus .artLabGrid,.streamFocus .mathGrid{grid-template-columns:1fr 1fr}}@media(max-width:520px){.quickMake{grid-template-columns:1fr 1fr}.quickMake .quickSeed{grid-column:span 1}.streamTools #previewPin{display:none}.moreActions{position:fixed;left:10px;right:10px;top:100px;width:auto}.streamFocus .artLabGrid,.streamFocus .mathGrid{grid-template-columns:1fr 1fr}}
+/* A single, preview-first workspace; no miniature labels or duplicate toolbars. */
+body.sandboxWorkspace{--bg:#11151c;--panel:#181e27;--t:#e9edf3;--m:#a8b4c4;--a:#8dd9c4;--b:#baa5ea;--l:#343f4e;background:var(--bg);font-size:13px;line-height:1.45;overflow:hidden}
+body.sandboxWorkspace .app{height:100vh;height:100dvh;display:grid;grid-template-rows:auto auto minmax(0,1fr)}
+body.sandboxWorkspace button,body.sandboxWorkspace .filebtn,body.sandboxWorkspace select,body.sandboxWorkspace input:not([type=range]):not([type=checkbox]):not([type=color]):not([type=file]){font:inherit;font-size:12px;min-height:32px;padding:5px 9px;border-radius:6px;background:#222b37;border-color:var(--l);color:var(--t)}
+body.sandboxWorkspace button,body.sandboxWorkspace .filebtn{font-weight:600;touch-action:manipulation}
+body.sandboxWorkspace button:hover,body.sandboxWorkspace .filebtn:hover{background:#303c49;border-color:#84b9ad}
+body.sandboxWorkspace button.active,body.sandboxWorkspace button[aria-pressed=true]{background:#24483f;border-color:#86d6bf!important;box-shadow:none;color:#d3ffef}
+body.sandboxWorkspace button:disabled{opacity:.45;cursor:not-allowed}
+body.sandboxWorkspace :focus-visible{outline:2px solid #a7e4d3;outline-offset:3px}
+body.sandboxWorkspace .top{padding:10px 14px;gap:14px;min-height:60px;position:relative;background:#151a22;border-bottom:1px solid var(--l);backdrop-filter:none}
+body.sandboxWorkspace .brand{min-width:0;flex-shrink:0}
+body.sandboxWorkspace .brand h1{font-size:21px;letter-spacing:-.045em;line-height:1.15}
+body.sandboxWorkspace .brand .sub{font-size:11px;color:var(--m);display:block}
+body.sandboxWorkspace .actions{gap:5px;align-items:center;flex-wrap:wrap}
+body.sandboxWorkspace #randomBtn,body.sandboxWorkspace #generateBtn{color:#d5ffe9;background:#294b3e;border-color:#547e69}
+body.sandboxWorkspace #snapBtn{color:#e4d9ff;background:#3a3150;border-color:#74618f}
+body.sandboxWorkspace #webviewBar{display:none!important}
+body.sandboxWorkspace .streamBar{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:7px 14px;background:#181e27;border-bottom:1px solid var(--l);z-index:60;min-width:0}
+body.sandboxWorkspace .taskTabs{display:flex;gap:4px;overflow-x:auto;scrollbar-width:thin;min-width:0}
+body.sandboxWorkspace .taskTabs button{white-space:nowrap;flex-shrink:0}
+body.sandboxWorkspace .streamTools{display:flex;align-items:center;gap:12px;flex-shrink:0}
+body.sandboxWorkspace #streamSummary{font:11px ui-monospace,monospace;color:var(--m)}
+body.sandboxWorkspace #moreMenu{position:relative}
+body.sandboxWorkspace #moreMenu summary{cursor:pointer;padding:6px 10px;border:1px solid var(--l);border-radius:6px;font-size:12px}
+body.sandboxWorkspace .moreActions{position:absolute;right:0;top:calc(100% + 7px);width:250px;padding:10px;background:#1b2330;border:1px solid #506072;border-radius:9px;box-shadow:0 12px 32px #0008;display:grid;gap:6px;grid-template-columns:1fr 1fr;z-index:100}
+body.sandboxWorkspace .main{height:auto!important;min-height:0;padding:10px;gap:10px;display:grid;grid-template-columns:minmax(340px,1.1fr) minmax(400px,1fr);overflow:hidden!important}
+body.sandboxWorkspace .stage,body.sandboxWorkspace .panel{min-width:0;min-height:0;border:1px solid var(--l);border-radius:10px;background:#181e27;box-shadow:none;scrollbar-width:thin;overflow:auto!important}
+body.sandboxWorkspace .stage{display:flex;flex-direction:column;gap:0;padding:10px}
+body.sandboxWorkspace .panel{display:block!important;padding:12px}
+body.sandboxWorkspace .workspaceHelp{margin:0 0 12px;color:var(--m);font-size:12px;line-height:1.5}
+body.sandboxWorkspace .drop{margin:0 0 8px;padding:6px;min-height:0;border-radius:6px;border-color:#49596a;font-size:12px;background:transparent}
+body.sandboxWorkspace .drop strong{font-size:12px;font-weight:500;margin:0}
+body.sandboxWorkspace .drop span{color:var(--m)}
+body.sandboxWorkspace .preview{position:relative;margin:0;flex:0 0 auto;width:100%;height:clamp(210px,calc(100dvh - 380px),620px);min-height:0;max-height:none;padding:74px 12px 12px;overflow:auto;border:1px solid #303e4e;border-radius:7px;background:#0b1017;box-shadow:none}
+body.sandboxWorkspace .preview:not(.viewerScaled) #canvas,body.sandboxWorkspace .preview:not(.viewerScaled) .viewerMirror{width:100%!important;height:100%!important;max-height:100%!important;max-width:100%!important;object-fit:contain;background:transparent}
+body.sandboxWorkspace .preview.viewerScaled #canvas,body.sandboxWorkspace .preview.viewerScaled .viewerMirror{width:calc(var(--viewer-zoom,100)*1%)!important;height:auto!important;max-width:none!important;max-height:none!important}
+body.sandboxWorkspace .preview.viewerFloating{padding-top:82px;flex:none}
+body.sandboxWorkspace .viewerTools{opacity:1;backdrop-filter:none;box-shadow:none;border:0;border-bottom:1px solid #324052;border-radius:0;background:#111a24;top:0;left:0;right:0;padding:7px;gap:4px}
+body.sandboxWorkspace .viewerTools button,body.sandboxWorkspace .viewerTools select{font-size:11px;min-height:28px;height:28px;padding:4px 6px}
+body.sandboxWorkspace .viewerDrag{font-size:11px;padding:0 3px}
+body.sandboxWorkspace .viewerZoom{font-size:11px;gap:3px}
+body.sandboxWorkspace .viewerZoom input{width:65px}
+body.sandboxWorkspace .viewerZoomRead{min-width:30px;font-size:11px}
+body.sandboxWorkspace .status{padding:7px 0;gap:5px;grid-template-columns:minmax(0,1fr) auto}
+body.sandboxWorkspace .read,body.sandboxWorkspace .pill{font-size:11px}
+body.sandboxWorkspace #seedRead{display:none}
+body.sandboxWorkspace .sampleShelf{margin-top:8px}
+body.sandboxWorkspace .shelfHeading{display:flex;align-items:baseline;gap:10px;justify-content:space-between;margin-bottom:7px}
+body.sandboxWorkspace .shelfHeading h2{margin:0;font-size:14px;font-weight:650}
+body.sandboxWorkspace .shelfHeading span{font-size:11px;color:var(--m)}
+body.sandboxWorkspace .sampleGrid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px}
+body.sandboxWorkspace .sampleCard{padding:4px;display:flex;flex-direction:column;text-align:left;min-width:0;gap:4px;background:#202934}
+body.sandboxWorkspace .sampleCard img{display:block;width:100%;aspect-ratio:1.6;object-fit:cover;border-radius:3px;background:#0f1420}
+body.sandboxWorkspace .sampleCard span{font-size:11px;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+body.sandboxWorkspace .sampleCard small{font-size:10px;line-height:1.2;color:#afbecf;letter-spacing:.025em}
+body.sandboxWorkspace #sampleDescription{font-size:11px;color:var(--m);min-height:2.8em;margin-top:6px}
+body.sandboxWorkspace .quickLooks{display:flex;flex-wrap:wrap;gap:5px;align-items:center;border-top:1px solid var(--l);padding-top:9px;margin-top:4px}
+body.sandboxWorkspace .quickLooks>span{font-size:12px;color:var(--m);margin-right:3px}
+body.sandboxWorkspace .quickLooks button{min-height:29px;padding:4px 8px}
+body.sandboxWorkspace .sandboxHint{font-size:11px;color:var(--m);margin:9px 0 0}
+body.sandboxWorkspace .generator{padding:0;border:0;background:transparent}
+body.sandboxWorkspace .sectionTitle{gap:6px;flex-wrap:wrap;margin-bottom:8px}
+body.sandboxWorkspace .sectionTitle strong,body.sandboxWorkspace h3{font-size:14px}
+body.sandboxWorkspace .sectionTitle span{font-size:11px;color:var(--m)}
+body.sandboxWorkspace textarea#prompt{font-size:13px;min-height:65px;max-height:140px;padding:9px;line-height:1.5;background:#111820}
+body.sandboxWorkspace .genGrid,body.sandboxWorkspace .advancedGrid,body.sandboxWorkspace .artLabGrid,body.sandboxWorkspace .mathGrid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+body.sandboxWorkspace .genGrid label,body.sandboxWorkspace .advancedGrid label,body.sandboxWorkspace .mathGrid label,body.sandboxWorkspace .artLabGrid label,body.sandboxWorkspace .sizeRow label,body.sandboxWorkspace .global label{font-size:12px;color:var(--m);gap:4px;min-width:0}
+body.sandboxWorkspace .genGrid input,body.sandboxWorkspace .genGrid select,body.sandboxWorkspace .advancedGrid input,body.sandboxWorkspace .advancedGrid select,body.sandboxWorkspace .mathGrid input,body.sandboxWorkspace .mathGrid select,body.sandboxWorkspace .artLabGrid input,body.sandboxWorkspace .artLabGrid select{width:100%;min-width:0;font-size:12px}
+body.sandboxWorkspace .sourcePresetRow{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+body.sandboxWorkspace .sourcePresetRow select{flex:1;min-width:130px}
+body.sandboxWorkspace .sourcePresetRow .hint{display:none}
+body.sandboxWorkspace .promptTips{font-size:11px;line-height:1.55;margin-top:9px;color:var(--m)}
+body.sandboxWorkspace .genActions{gap:6px;margin:10px 0}
+body.sandboxWorkspace .advancedSection,body.sandboxWorkspace .artLab,body.sandboxWorkspace .mathLab,body.sandboxWorkspace .sandboxAdvanced{margin:8px 0;border:1px solid var(--l);border-radius:7px;background:#171f2a}
+body.sandboxWorkspace details>summary{font-size:12px;padding:9px;cursor:pointer;color:#dbe7f5}
+body.sandboxWorkspace .advancedBody,body.sandboxWorkspace .mathBody,body.sandboxWorkspace .artLabGrid{padding:10px}
+body.sandboxWorkspace .mathInfo,body.sandboxWorkspace .artReadout,body.sandboxWorkspace .resolutionReadout{font-size:11px;line-height:1.5}
+body.sandboxWorkspace .mathTop,body.sandboxWorkspace .mathActions,body.sandboxWorkspace .artLabActions{gap:6px;flex-wrap:wrap;min-width:0}
+body.sandboxWorkspace .mathTop>*{max-width:100%}
+body.sandboxWorkspace .styleHelp{font-size:12px;color:var(--m);margin:10px}
+body.sandboxWorkspace #styleImported{margin:0 10px 10px}
+body.sandboxWorkspace .presets{padding:0 0 10px;background:transparent}
+body.sandboxWorkspace .presetGrid{grid-template-columns:repeat(4,minmax(0,1fr));gap:5px}
+body.sandboxWorkspace .presetGrid button{font-size:12px;padding:5px}
+body.sandboxWorkspace .global{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;padding:10px;border:0}
+body.sandboxWorkspace .configurator{margin:10px 0;padding:10px;background:#151d27;border-color:var(--l)}
+body.sandboxWorkspace .configurator h3{margin:0 0 5px}
+body.sandboxWorkspace .configRow{display:flex;flex-wrap:wrap;gap:5px}
+body.sandboxWorkspace .configRow>*{min-width:0;max-width:100%}
+body.sandboxWorkspace #effectSearch{flex:1 1 150px;background:#101822;border:1px solid var(--l);color:var(--t);border-radius:6px;padding:7px}
+body.sandboxWorkspace .effectChip{font-size:11px}
+body.sandboxWorkspace .layerTools{background:transparent;gap:6px;padding:6px 0;flex-wrap:wrap;font-size:12px}
+body.sandboxWorkspace .rackHint{display:none}
+body.sandboxWorkspace .controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));overflow:visible;padding:8px 0;gap:8px}
+body.sandboxWorkspace .group{min-width:0;padding:8px;margin:0;border:1px solid #34404e;border-radius:8px}
+body.sandboxWorkspace .groupHead{flex-wrap:wrap;gap:4px;margin-bottom:8px}
+body.sandboxWorkspace .groupHead h2{font-size:13px;flex:1 0 100%;margin:0 0 2px}
+body.sandboxWorkspace .groupHead button{font-size:11px;padding:3px 5px;min-height:26px}
+body.sandboxWorkspace .groupHelp{font-size:11px;line-height:1.45;color:var(--m)}
+body.sandboxWorkspace .ctrl{padding:6px;margin:6px 0;background:#ffffff05}
+body.sandboxWorkspace .ctrlTop{gap:5px;min-width:0}
+body.sandboxWorkspace .ctrlTop label,body.sandboxWorkspace .ctrl label{font-size:12px;color:#d6e2ee}
+body.sandboxWorkspace input.paramNumber{font-size:12px!important;min-height:26px!important;width:65px;padding:3px 5px!important}
+body.sandboxWorkspace .ctrl input[type=range]{height:20px;accent-color:#baa5ea}
+body.sandboxWorkspace .paramHint{font-size:11px;line-height:1.4;color:var(--m)}
+body.sandboxWorkspace .simpleConfig .paramHint,body.sandboxWorkspace .simpleConfig .groupHelp{display:none}
+body.sandboxWorkspace .check{font-size:12px;min-height:28px;gap:6px}
+body.sandboxWorkspace input[type=checkbox]{width:16px;height:16px}
+body.sandboxWorkspace .mini input,body.sandboxWorkspace .mini select,body.sandboxWorkspace .sweep input,body.sandboxWorkspace .sweep button{font-size:11px!important;min-height:27px!important;padding:3px!important;min-width:0}
+body.sandboxWorkspace .workspaceExport{border:1px solid var(--l);padding:12px;border-radius:8px;margin:10px 0;background:#151d27}
+body.sandboxWorkspace .workspaceExport h2{font-size:16px;margin:0}
+body.sandboxWorkspace .workspaceExport p{font-size:12px;color:var(--m);line-height:1.6}
+body.sandboxWorkspace #exportActions,body.sandboxWorkspace #projectActions{display:flex;flex-wrap:wrap;gap:6px}
+body.sandboxWorkspace:not([data-task=all]):not([data-task=fx]) .panel>.presets,body.sandboxWorkspace:not([data-task=all]):not([data-task=fx]) .panel>#globalAutomation,body.sandboxWorkspace:not([data-task=all]):not([data-task=fx]) .panel>.configurator,body.sandboxWorkspace:not([data-task=all]):not([data-task=fx]) .panel>.layerTools,body.sandboxWorkspace:not([data-task=all]):not([data-task=fx]) .panel>.controls{display:none!important}
+body.sandboxWorkspace[data-task=fx] .generator{display:none!important}
+body.sandboxWorkspace:not([data-task=all]):not([data-task=export]) .workspaceExport{display:none}
+body.sandboxWorkspace[data-task=math] #artLab,body.sandboxWorkspace[data-task=style] #mathLab{display:none!important}
+body.sandboxWorkspace[data-task=math] #mathLab,body.sandboxWorkspace[data-task=style] #artLab{display:block!important}
+body.sandboxWorkspace #sandboxNotice{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);max-width:min(640px,calc(100vw - 24px));padding:12px 18px;border:1px solid #80b4a6;border-radius:9px;background:#1a2b2b;color:#e1fff5;font-size:13px;box-shadow:0 8px 30px #0009;z-index:1200}
+body.sandboxWorkspace #sandboxNotice[hidden]{display:none}
+@media(min-width:1500px){body.sandboxWorkspace .genGrid,body.sandboxWorkspace .mathGrid,body.sandboxWorkspace .advancedGrid,body.sandboxWorkspace .artLabGrid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:1100px){body.sandboxWorkspace #streamSummary{display:none}body.sandboxWorkspace .brand .sub{display:none}body.sandboxWorkspace .main{grid-template-columns:minmax(300px,1fr) minmax(360px,1fr)}body.sandboxWorkspace .sampleGrid{grid-template-columns:repeat(3,minmax(0,1fr))}body.sandboxWorkspace .sampleCard img{max-height:52px}body.sandboxWorkspace .preview{height:clamp(210px,calc(100dvh - 440px),500px)}body.sandboxWorkspace .shelfHeading{flex-wrap:wrap;gap:2px}}
+@media(max-width:760px){body.sandboxWorkspace{overflow:auto}body.sandboxWorkspace .app{height:auto;min-height:100dvh}body.sandboxWorkspace .top{align-items:flex-start;flex-wrap:wrap;padding:10px}body.sandboxWorkspace .actions{justify-content:flex-start}body.sandboxWorkspace .streamBar{padding:7px;gap:5px}body.sandboxWorkspace .taskTabs button{font-size:12px;padding:5px 8px}body.sandboxWorkspace .main{display:flex;flex-direction:column;overflow:visible!important;padding:7px;gap:8px}body.sandboxWorkspace .stage,body.sandboxWorkspace .panel{min-height:0;overflow:visible!important}body.sandboxWorkspace .preview{height:300px;min-height:0}body.sandboxWorkspace .sampleGrid{grid-template-columns:repeat(6,minmax(0,1fr))}body.sandboxWorkspace .sampleCard img{max-height:none}body.sandboxWorkspace .viewerTools{right:0;max-width:100%}body.sandboxWorkspace .viewerTools .viewerZoom{display:none}body.sandboxWorkspace .taskTabs{scrollbar-width:none}body.sandboxWorkspace .controls{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:480px){body.sandboxWorkspace .sampleGrid{grid-template-columns:repeat(3,minmax(0,1fr))}body.sandboxWorkspace .sampleCard img{max-height:55px}body.sandboxWorkspace .preview{height:245px;padding-top:65px}body.sandboxWorkspace .brand h1{font-size:20px}body.sandboxWorkspace .top .actions{gap:4px}body.sandboxWorkspace .top button,body.sandboxWorkspace .top .filebtn{font-size:12px;padding:5px 7px;min-height:34px}body.sandboxWorkspace .controls{grid-template-columns:1fr}body.sandboxWorkspace .status{grid-template-columns:minmax(0,1fr) auto}body.sandboxWorkspace .shelfHeading span{font-size:11px}body.sandboxWorkspace .moreActions{position:fixed;right:10px;top:165px;width:min(270px,calc(100vw - 20px))}body.sandboxWorkspace .viewerTools button,body.sandboxWorkspace .viewerTools select{font-size:11px;padding:4px}}
+@media(prefers-reduced-motion:reduce){body.sandboxWorkspace *,body.sandboxWorkspace *::before,body.sandboxWorkspace *::after{scroll-behavior:auto!important;transition:none!important}}
