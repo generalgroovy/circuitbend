@@ -18,13 +18,17 @@ const server = createServer(async (request, response) => {
 });
 await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
 const origin = `http://127.0.0.1:${server.address().port}`;
-const browser = await chromium.launch({headless:true, args:['--autoplay-policy=no-user-gesture-required']});
+const browser = await chromium.launch({headless:true, executablePath:process.env.CHROMIUM_PATH || undefined, args:['--autoplay-policy=no-user-gesture-required']});
 const page = await browser.newPage({viewport:{width:1440,height:900},acceptDownloads:true});
 const errors = [], external = [], results = [];
 page.on('pageerror', error => errors.push(error.message));
-await page.route('**/*', route => {
+await page.route('**/*', async route => {
   const url = route.request().url();
   if (/^https?:/.test(url) && !url.startsWith(origin)) {external.push(url); return route.abort();}
+  if (process.env.CIRCUITBEND_EMBEDDED_TEST && url.startsWith(origin)) {
+    const name = new URL(url).pathname.slice(1) || 'index.html';
+    return route.fulfill({body:await readFile(path.join(root,name)),contentType:types[path.extname(name)] || 'application/octet-stream'});
+  }
   return route.continue();
 });
 const test = async (name, run) => {
@@ -33,7 +37,8 @@ const test = async (name, run) => {
 };
 const choose = id => page.evaluate(id => window.circuitbendSamples.select(id), id);
 try {
-  await page.goto(origin);
+  if(process.env.CIRCUITBEND_EMBEDDED_TEST) await page.setContent((await readFile(path.join(root,'index.html'),'utf8')).replace('<head>',`<head><base href="${origin}/">`));
+  else await page.goto(origin);
   await page.waitForFunction(() => window.circuitbendSamples && window.circuitbendViewer && ready, {timeout:30000});
   await test('six offline samples; default image is not animated', async () => {
     assert.equal(await page.locator('[data-sample]').count(), 6);
@@ -138,7 +143,9 @@ try {
     assert.equal(await page.evaluate(()=>window.__tracks.every(track=>track.readyState==='ended')),true);
   });
   await test('floating, scaling and pop-out viewers remain functional', async () => {
-    await choose('neon'); await page.locator('#viewerFloat').click();
+    await choose('neon'); await page.locator('#viewerSource').selectOption('source');
+    await page.waitForFunction(()=>document.getElementById('viewerMirror').width===640);
+    await page.locator('#viewerSource').selectOption('output'); await page.locator('#viewerFloat').click();
     assert.equal(await page.locator('.preview').evaluate(node=>node.classList.contains('viewerFloating')),true);
     await page.locator('#viewerFloat').click();
     await page.locator('#viewerZoom').evaluate(node=>{node.value='150';node.dispatchEvent(new Event('input',{bubbles:true}));});
@@ -165,7 +172,7 @@ try {
       const surface=document.createElement('canvas');surface.width=720;surface.height=450;
       surface.getContext('2d').drawImage(image,0,0,720,450);return surface.toDataURL('image/jpeg',.4).split(',')[1];
     },capture);
-    console.log('WORKSPACE_PREVIEW_JPEG '+thumbnail);
+    await writeFile(path.join(artifacts,'thumbnail.jpg'),Buffer.from(thumbnail,'base64'));
   });
   await test('preview is fully contained and sample looks stay above the desktop fold', async () => {
     await page.setViewportSize({width:1440,height:900});
@@ -183,7 +190,7 @@ try {
   });
   await test('reduced-motion preference keeps selected video paused', async () => {
     const reduced=await browser.newPage({reducedMotion:'reduce'});
-    await reduced.goto(origin);await reduced.waitForFunction(()=>window.circuitbendSamples);
+    if(process.env.CIRCUITBEND_EMBEDDED_TEST){await reduced.route(origin+'/**',async route=>{const name=new URL(route.request().url()).pathname.slice(1);return route.fulfill({body:await readFile(path.join(root,name)),contentType:types[path.extname(name)]||'text/plain'});});await reduced.setContent((await readFile(path.join(root,'index.html'),'utf8')).replace('<head>',`<head><base href="${origin}/">`));}else await reduced.goto(origin);await reduced.waitForFunction(()=>window.circuitbendSamples);
     await reduced.evaluate(()=>window.circuitbendSamples.select('orbit'));
     assert.equal(await reduced.evaluate(()=>playing===false&&video.paused),true);await reduced.close();
   });

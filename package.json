@@ -1,10 +1,11 @@
 {
   "name": "circuitbend-sandbox",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "private": true,
-  "description": "Streamlined offline generative media sandbox with pixel/ASCII, mathematical visuals and freely scalable live viewers",
+  "description": "Local media sandbox with compact tools, portable sample projects, reversible effects and saved experiments",
   "scripts": {
-    "test": "node tests/smoke.mjs && node tests/pages.mjs"
+    "test": "node tests/smoke.mjs && node tests/pages.mjs",
+    "test:browser": "node tests/workspace.browser.mjs && node tests/lifecycle.browser.mjs"
   },
   "engines": {
     "node": ">=18"

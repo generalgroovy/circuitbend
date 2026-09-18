@@ -1,0 +1,24 @@
+/* Compact transport and optional scene library; nothing replaces the source or FX controls. */
+body.sandboxWorkspace .experimentTransport{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:0 0 7px;padding:5px 0;border-bottom:1px solid var(--l);font-size:11px}
+body.sandboxWorkspace .experimentTransport button{min-height:28px;padding:3px 7px;font-size:11px}
+body.sandboxWorkspace #videoSeek{flex:1 1 64px;min-width:40px;width:80px;max-width:120px;accent-color:#8dd9c4}
+body.sandboxWorkspace #transportReadout{font:10px ui-monospace,monospace;min-width:44px;color:var(--m)}
+body.sandboxWorkspace #fxMix{width:80px;min-width:50px;accent-color:#baa5ea}
+body.sandboxWorkspace #fxMixValue{width:30px;text-align:right;font-variant-numeric:tabular-nums}
+body.sandboxWorkspace .experimentBody{padding:10px}
+body.sandboxWorkspace .experimentBody p,body.sandboxWorkspace #experimentStorage{font-size:11px;line-height:1.5;color:var(--m);margin:0 0 8px}
+body.sandboxWorkspace .recipeGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;margin-bottom:10px}
+body.sandboxWorkspace .recipeGrid button{font-size:11px;padding:5px 6px}
+body.sandboxWorkspace .experimentSaveRow{display:flex;gap:6px;margin:8px 0;flex-wrap:wrap}
+body.sandboxWorkspace #experimentName{flex:1 1 120px;min-width:0}
+body.sandboxWorkspace .experimentSlots{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin-top:8px}
+body.sandboxWorkspace .experimentCard{min-width:0;display:grid;gap:4px}
+body.sandboxWorkspace .experimentCard [data-experiment-load]{display:grid;min-width:0;padding:4px;text-align:left;gap:5px}
+body.sandboxWorkspace .experimentCard img{width:100%;height:auto;aspect-ratio:1.6;object-fit:contain;border-radius:4px}
+body.sandboxWorkspace .experimentCard span{font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%}
+body.sandboxWorkspace .experimentCard [data-experiment-delete]{font-size:10px;min-height:24px;padding:2px 6px;color:var(--m)}
+body.sandboxWorkspace .emptyExperiments{grid-column:1/-1}
+body.sandboxWorkspace .preview{height:clamp(210px,calc(100dvh - 506px),620px)}
+@media(max-width:1100px) and (min-width:761px){body.sandboxWorkspace .preview{height:clamp(190px,calc(100dvh - 510px),500px)}}
+@media(max-width:760px){body.sandboxWorkspace .preview{height:290px}}
+@media(max-width:480px){body.sandboxWorkspace .preview{height:240px}body.sandboxWorkspace .recipeGrid,body.sandboxWorkspace .experimentSlots{grid-template-columns:repeat(2,minmax(0,1fr))}body.sandboxWorkspace #fxMix{width:65px}body.sandboxWorkspace #videoSeek{max-width:65px}}

@@ -70,7 +70,7 @@
     const actions = document.querySelector('.top .actions');
     for (const id of ['undoBtn', 'resetBtn', 'randomBtn', 'snapBtn']) actions.appendChild(byId(id));
     const exporter = el('section', {id: 'workspaceExport', class: 'workspaceExport'});
-    exporter.innerHTML = '<h2>Save your experiment</h2><p>PNG saves the current preview. Full-res PNG renders the source size. Recording saves a silent clip at preview resolution.</p><div id="exportActions"></div><p>Project JSON stores generators and settings. Imported files are not embedded: reopen the same media after loading a project, or bake a still first.</p><div id="projectActions"></div>';
+    exporter.innerHTML = '<h2>Save your experiment</h2><p>PNG saves the current preview. Full-res PNG renders the source size. Recording saves a silent clip at preview resolution.</p><div id="exportActions"></div><p>Project JSON restores built-in samples, generators, settings and baked stills. External files stay private: reopen the named file before loading its project.</p><div id="projectActions"></div>';
     document.querySelector('.panel').appendChild(exporter);
     for (const id of ['exportFullBtn', 'recordBtn', 'asciiBtn']) byId('exportActions').appendChild(byId(id));
     for (const id of ['projectSaveBtn', 'projectFile']) {
@@ -119,6 +119,8 @@
     document.body.classList.add('sandboxWorkspace');
     const top = document.querySelector('.top');
     document.querySelector('.brand h1').textContent = 'Circuitbend';
+    document.querySelector('.generator > .sectionTitle strong').textContent = 'Generate a source';
+    document.querySelector('.generator > .sectionTitle span').textContent = 'Create or replace the current source';
     document.querySelector('.brand .sub').textContent = 'A playground for pictures + motion';
     const bar = el('nav', {id: 'streamBar', class: 'streamBar', 'aria-label': 'Workspace tools'});
     bar.innerHTML = `<div class="taskTabs">${Object.entries(tasks).map(([key, task]) => `<button type="button" data-task="${key}" aria-pressed="false">${task.label}</button>`).join('')}<button id="focusToggle" type="button" title="Show every tool in one workspace" aria-pressed="false">All tools</button></div><div class="streamTools"><span id="streamSummary"></span><details id="moreMenu"><summary>More</summary><div id="moreActions" class="moreActions"></div></details></div>`;
@@ -166,7 +168,7 @@
     function loadSupport(name) {
       return new Promise((resolve, reject) => {const script = el('script', {src: name}); script.onload = resolve; script.onerror = () => reject(new Error(`Could not load ${name}`)); document.body.appendChild(script);});
     }
-    loadSupport('sandbox-runtime.js').then(() => loadSupport('sandbox-samples.js')).catch(error => notify(`${error.message}. Existing generators and effects are still available.`));
+    loadSupport('sandbox-runtime.js').then(() => loadSupport('sandbox-samples.js')).then(() => loadSupport('sandbox-lab.js')).catch(error => notify(`${error.message}. Existing generators and effects are still available.`));
   }
   if (document.readyState === 'complete') bind(); else window.addEventListener('load', bind, {once: true});
 })();

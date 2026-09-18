@@ -16,7 +16,7 @@
     const item = items.find(item => item.id === id); if (!item) return false;
     const token = ++selecting;
     grid.setAttribute('aria-busy', 'true');
-    const success = await window.circuitbendSandbox.load(createFile(id));
+    const success = await window.circuitbendSandbox.load(createFile(id), {sampleId:id});
     if (token === selecting) grid.setAttribute('aria-busy', 'false');
     if (success && token === selecting) {
       document.getElementById('sampleDescription').textContent = item.description;

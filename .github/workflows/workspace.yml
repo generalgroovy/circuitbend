@@ -19,7 +19,7 @@ jobs:
       - run: node --check sandbox-runtime.js && node --check sandbox-samples.js
       - run: npm install --no-save --package-lock=false playwright@1.55.0
       - run: npx playwright install --with-deps chromium
-      - run: node tests/workspace.browser.mjs
+      - run: npm run test:browser
       - uses: actions/upload-artifact@v4
         if: always()
         with:

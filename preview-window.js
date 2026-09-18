@@ -19,8 +19,9 @@
   function addStyle(){if(document.querySelector('link[data-circuitbend-viewer]'))return;const l=document.createElement('link');l.rel='stylesheet';l.href='preview-window.css';l.dataset.circuitbendViewer='1';document.head.appendChild(l)}
 
   function sourceInfo(kind=state.source){
+    const video=byId('video'),image=byId('image'); // Media nodes are replaced atomically after decoding.
     if(kind==='output'&&output.width&&output.height)return{element:output,w:output.width,h:output.height,label:'Processed output'};
-    if(kind==='source'&&sourceCanvas.width&&sourceCanvas.height)return{element:sourceCanvas,w:sourceCanvas.width,h:sourceCanvas.height,label:'Source canvas'};
+    if(kind==='source'){const element=src(),[w,h]=size();if(w&&h)return{element,w,h,label:'Current source'}}
     if(kind==='media'){
       if(video&&video.currentSrc&&video.readyState>=2&&video.videoWidth&&video.videoHeight)return{element:video,w:video.videoWidth,h:video.videoHeight,label:'Imported video'};
       if(image&&image.currentSrc&&image.complete&&image.naturalWidth&&image.naturalHeight)return{element:image,w:image.naturalWidth,h:image.naturalHeight,label:'Imported image'};
