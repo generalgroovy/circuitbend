@@ -167,6 +167,20 @@ try {
     },capture);
     console.log('WORKSPACE_PREVIEW_JPEG '+thumbnail);
   });
+  await test('preview is fully contained and sample looks stay above the desktop fold', async () => {
+    await page.setViewportSize({width:1440,height:900});
+    const widths=[];
+    for (const task of ['create','fx']) {
+      await page.evaluate(task=>circuitbendWorkspace.setTask(task),task);
+      const geometry=await page.evaluate(()=>{
+        const preview=document.querySelector('.preview'), output=document.querySelector('#canvas');
+        const p=preview.getBoundingClientRect(),c=output.getBoundingClientRect(),looks=document.querySelector('.quickLooks').getBoundingClientRect();
+        return {previewWidth:p.width,canvasInside:c.top>=p.top&&c.bottom<=p.bottom+1&&c.right<=p.right+1,looksBottom:looks.bottom};
+      });
+      widths.push(geometry.previewWidth);assert.ok(geometry.canvasInside,JSON.stringify(geometry));assert.ok(geometry.looksBottom<=900,JSON.stringify(geometry));
+    }
+    assert.ok(Math.abs(widths[0]-widths[1])<2);
+  });
   await test('reduced-motion preference keeps selected video paused', async () => {
     const reduced=await browser.newPage({reducedMotion:'reduce'});
     await reduced.goto(origin);await reduced.waitForFunction(()=>window.circuitbendSamples);
