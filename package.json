@@ -1,11 +1,11 @@
 {
   "name": "circuitbend-sandbox",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "private": true,
-  "description": "Local media sandbox with compact tools, portable sample projects, reversible effects and saved experiments",
+  "description": "A local signal workbench for images, mathematical motion and reversible visual experiments",
   "scripts": {
-    "test": "node tests/smoke.mjs && node tests/pages.mjs",
-    "test:browser": "node tests/workspace.browser.mjs && node tests/lifecycle.browser.mjs"
+    "test": "node tests/smoke.mjs && node tests/pages.mjs && node tests/docs.mjs",
+    "test:browser": "node tests/workspace.browser.mjs && node tests/lifecycle.browser.mjs && node tests/design.browser.mjs"
   },
   "engines": {
     "node": ">=18"

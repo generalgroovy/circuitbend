@@ -5,11 +5,11 @@
   const STORAGE = 'circuitbend.workspace.v2';
   const state = {focus: true, task: 'create', previewPinned: true};
   const tasks = {
-    create: {legacy: 'source', label: 'Source', help: 'Pick a sample, open your own media, or generate a source.'},
-    math: {legacy: 'art', label: 'Math', help: 'Explore mathematical structures. Every parameter is editable.'},
-    style: {legacy: 'art', label: 'Pixel / ASCII', help: 'Turn a generated or imported source into pixels and glyphs.'},
-    fx: {legacy: 'fx', label: 'Effects', help: 'Start with a look, then adjust individual effects. Undo keeps experiments reversible.'},
-    export: {legacy: 'output', label: 'Export', help: 'Save an image, a silent video, or a reusable project.'}
+    create: {legacy: 'source', label: 'Source', help: 'Open an image or video, pick a sample, or build a pattern.'},
+    math: {legacy: 'art', label: 'Math', help: 'Choose a concept. Change one variable. Watch the structure respond.'},
+    style: {legacy: 'art', label: 'Pixel / ASCII', help: 'Shape the pixels, palette and characters of a generated source.'},
+    fx: {legacy: 'fx', label: 'Effects', help: 'Try a look, then change one effect at a time. Undo is always nearby.'},
+    export: {legacy: 'output', label: 'Export', help: 'Save a still or silent clip. Save a project to keep editing later.'}
   };
   let toastTimer;
   function el(tag, attrs = {}, html = '') {
@@ -43,12 +43,13 @@
       button.classList.toggle('active', active);
       button.setAttribute('aria-pressed', String(active));
     });
-    byId('workspaceHelp').textContent = state.focus ? tasks[task].help : 'All tools, together. Search effects or open a section to go deeper.';
+    byId('workspaceHelp').textContent = state.focus ? tasks[task].help : 'Every tool in one inspector. Open only the sections you need.';
     if (task === 'math' && byId('mathLab')) byId('mathLab').open = true;
     if (task === 'style' && byId('artLab')) byId('artLab').open = true;
     if (task === 'export') document.querySelector('.advancedSection[data-webpanel="output"]')?.setAttribute('open', '');
     document.querySelector('.panel')?.scrollTo({top: 0});
     saveLocal(); updateSummary();
+    document.dispatchEvent(new Event('circuitbend:workspace'));
   }
   function applyFocus() {
     document.body.classList.toggle('streamFocus', state.focus);
@@ -70,7 +71,7 @@
     const actions = document.querySelector('.top .actions');
     for (const id of ['undoBtn', 'resetBtn', 'randomBtn', 'snapBtn']) actions.appendChild(byId(id));
     const exporter = el('section', {id: 'workspaceExport', class: 'workspaceExport'});
-    exporter.innerHTML = '<h2>Save your experiment</h2><p>PNG saves the current preview. Full-res PNG renders the source size. Recording saves a silent clip at preview resolution.</p><div id="exportActions"></div><p>Project JSON restores built-in samples, generators, settings and baked stills. External files stay private: reopen the named file before loading its project.</p><div id="projectActions"></div>';
+    exporter.innerHTML = '<h2>Save your experiment</h2><p>Save PNG captures the preview. Full-res PNG uses the source size. Record video saves a silent clip at preview resolution.</p><div id="exportActions"></div><p>Save project keeps the editable settings. Imported files are not included: reopen the same media before loading its project.</p><div id="projectActions"></div>';
     document.querySelector('.panel').appendChild(exporter);
     for (const id of ['exportFullBtn', 'recordBtn', 'asciiBtn']) byId('exportActions').appendChild(byId(id));
     for (const id of ['projectSaveBtn', 'projectFile']) {
@@ -103,7 +104,7 @@
     // Use the real controls, not proxies that can drift out of sync.
     const quickMake = document.querySelector('.genGrid'); quickMake.classList.add('quickMake'); quickMake.dataset.webpanel = 'source art';
     const useMedia = el('button', {id: 'styleImported', type: 'button'}, 'Use imported media as reference');
-    const help = el('p', {class: 'styleHelp'}, 'Pixel / ASCII styles apply to generated sources. Use your imported media as a reference to style it.');
+    const help = el('p', {class: 'styleHelp'}, 'For an image or video, choose Use imported media as reference first. Then adjust the renderer below.');
     const lab = byId('artLab');
     if (lab) {lab.querySelector('summary').after(help); help.after(useMedia);}
     useMedia.addEventListener('click', () => {
@@ -118,10 +119,10 @@
     const style = el('link', {rel: 'stylesheet', href: 'streamlined.css', 'data-circuitbend-streamlined': '1'}); document.head.appendChild(style);
     document.body.classList.add('sandboxWorkspace');
     const top = document.querySelector('.top');
-    document.querySelector('.brand h1').textContent = 'Circuitbend';
+    document.querySelector('.brand h1').innerHTML = '<span class="brandMark" aria-hidden="true"></span><span>circuit<em>bend</em></span>'; document.querySelector('.brand h1').setAttribute('aria-label','Circuitbend');
     document.querySelector('.generator > .sectionTitle strong').textContent = 'Generate a source';
-    document.querySelector('.generator > .sectionTitle span').textContent = 'Create or replace the current source';
-    document.querySelector('.brand .sub').textContent = 'A playground for pictures + motion';
+    document.querySelector('.generator > .sectionTitle span').textContent = 'Procedural, not AI-generated';
+    document.querySelector('.brand .sub').textContent = 'Independent signal experiments';
     const bar = el('nav', {id: 'streamBar', class: 'streamBar', 'aria-label': 'Workspace tools'});
     bar.innerHTML = `<div class="taskTabs">${Object.entries(tasks).map(([key, task]) => `<button type="button" data-task="${key}" aria-pressed="false">${task.label}</button>`).join('')}<button id="focusToggle" type="button" title="Show every tool in one workspace" aria-pressed="false">All tools</button></div><div class="streamTools"><span id="streamSummary"></span><details id="moreMenu"><summary>More</summary><div id="moreActions" class="moreActions"></div></details></div>`;
     top.after(bar);
@@ -130,14 +131,14 @@
     const help = el('p', {id: 'workspaceHelp', class: 'workspaceHelp'}); panel.prepend(help);
     const stage = document.querySelector('.stage');
     const tray = el('section', {class: 'sampleShelf', id: 'sampleShelf', 'aria-label': 'Built-in test media'});
-    tray.innerHTML = '<div class="shelfHeading"><h2>Start playing</h2><span>4 images · 2 loops · no upload needed</span></div><div id="sampleGrid" class="sampleGrid"></div><div id="sampleDescription">Choose a sample. Your effects stay in place.</div>';
+    tray.innerHTML = '<div class="shelfHeading"><h2>Test signals</h2><span>4 stills / 2 loops</span></div><div id="sampleGrid" class="sampleGrid"></div><div id="sampleDescription">Choose a sample. Your effects stay in place.</div>';
     stage.appendChild(tray);
     const looks = el('section', {class: 'quickLooks', 'aria-label': 'Quick effect looks'});
-    looks.innerHTML = '<span>Try a look</span>' + ['clean','dirty','neon','poster','terminal','dream'].map(name => `<button type="button" data-look="${name}">${({clean:'Original',dirty:'VHS',neon:'Neon',poster:'Print',terminal:'Terminal',dream:'Dream'})[name]}</button>`).join('');
+    looks.innerHTML = '<span>Quick looks</span>' + ['clean','dirty','neon','poster','terminal','dream'].map(name => `<button type="button" data-look="${name}">${({clean:'Original',dirty:'VHS',neon:'Neon',poster:'Print',terminal:'Terminal',dream:'Dream'})[name]}</button>`).join('');
     stage.appendChild(looks);
     looks.addEventListener('click', event => {const key = event.target.dataset.look; if (key) {document.querySelector(`[data-preset="${key}"]`)?.click(); notify(`${event.target.textContent} look applied. Undo restores the previous effects.`);}});
-    const note = el('p', {class: 'sandboxHint'}, 'Pick a source → try a look → bend the controls. Nothing leaves your browser.'); stage.appendChild(note);
-    drop.innerHTML = '<strong>Drop an image or video</strong><span> or use Open media</span>';
+    const note = el('p', {class: 'sandboxHint'}, 'Source → Look → Experiment → Save. Media stays on this device.'); stage.appendChild(note);
+    drop.innerHTML = '<strong>01 / SIGNAL MONITOR</strong><span>Drop media here · or use Open media</span>';
     drop.setAttribute('aria-label', 'Drop an image or video here, or use the Open media button');
     const compare = el('button', {id: 'compareBtn', type: 'button', 'aria-pressed': 'false', title: 'Temporarily bypass effects without changing their values'}, 'Compare');
     byId('playBtn').after(compare);
@@ -168,7 +169,7 @@
     function loadSupport(name) {
       return new Promise((resolve, reject) => {const script = el('script', {src: name}); script.onload = resolve; script.onerror = () => reject(new Error(`Could not load ${name}`)); document.body.appendChild(script);});
     }
-    loadSupport('sandbox-runtime.js').then(() => loadSupport('sandbox-samples.js')).then(() => loadSupport('sandbox-lab.js')).catch(error => notify(`${error.message}. Existing generators and effects are still available.`));
+    loadSupport('sandbox-runtime.js').then(() => loadSupport('sandbox-samples.js')).then(() => loadSupport('sandbox-lab.js')).then(() => loadSupport('workbench.js')).catch(error => notify(`${error.message}. Existing generators and effects are still available.`));
   }
   if (document.readyState === 'complete') bind(); else window.addEventListener('load', bind, {once: true});
 })();

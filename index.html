@@ -4,7 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="color-scheme" content="dark">
-<title>Circuitbend Sandbox</title>
+<title>Circuitbend — Signal workbench</title>
+<meta name="description" content="Turn images, video and mathematical patterns into visual experiments. Local media, live effects and editable scenes. No account or upload.">
 <link rel="stylesheet" href="style.css">
 <link rel="stylesheet" href="advanced.css">
 </head>
@@ -13,7 +14,7 @@
 <header class="top">
   <div class="brand">
     <h1>Circuitbend Sandbox</h1>
-    <div class="sub">Build reference sources, generate pixel/ASCII art, layer media, scale the canvas, bend effects, automate parameters, and export — locally in your browser.</div>
+    <div class="sub">Images, motion and happy accidents. No account. No upload.</div>
   </div>
   <div class="actions">
     <label class="filebtn">Open media<input id="file" type="file" accept="video/*,image/*"></label>
@@ -66,7 +67,7 @@
       </div>
 
       <details class="advancedSection" open>
-        <summary>2. Canvas &amp; output scale</summary>
+        <summary>Canvas &amp; resolution</summary>
         <div class="advancedBody">
           <div class="sizeRow">
             <select id="sizePreset" title="Set a common source canvas size">
@@ -89,12 +90,12 @@
             <label class="inlineCheck"><input id="pixelPreview" type="checkbox">Pixel-crisp preview</label>
             <span id="resolutionReadout" class="resolutionReadout">source 0×0 · live 0×0</span>
           </div>
-          <div class="promptTips">Source size is independent from live effect resolution. Increase the source for large exports; lower the live pixel budget while designing, then use <strong>Full-res PNG</strong> for a final still.</div>
+          <div class="promptTips">Lower the live budget for a faster preview. Source size stays unchanged for <strong>Full-res PNG</strong>.</div>
         </div>
       </details>
 
       <details class="advancedSection" open>
-        <summary>3. Palette &amp; imported-media layer</summary>
+        <summary>Palette &amp; media layer</summary>
         <div class="advancedBody">
           <div class="advancedGrid">
             <label>Palette<select id="paletteMode"><option value="auto">Prompt / auto</option><option value="mono">Monochrome</option><option value="warm">Warm</option><option value="cool">Cool</option><option value="neon">Neon</option><option value="earth">Earth</option><option value="game">Game palette</option><option value="rgb">RGB reference</option><option value="pastel">Pastel</option><option value="custom">Custom colors</option></select></label>
@@ -109,7 +110,7 @@
             <label>Pan Y<input id="overlayY" type="number" min="-4096" max="4096" step="1" value="0"></label>
             <div class="paletteSwatches" title="Used when Palette is Custom"><input id="palette1" type="color" value="#081018"><input id="palette2" type="color" value="#22d3ee"><input id="palette3" type="color" value="#a855f7"><input id="palette4" type="color" value="#f8fafc"></div>
           </div>
-          <div class="promptTips">Load an image or video once, switch back to a generated source, then enable <strong>Layer imported media</strong> to composite it over any procedural/reference source.</div>
+          <div class="promptTips">Open media, switch to a generated source, then enable <strong>Layer imported media</strong>. Use opacity, blend and position to combine them.</div>
         </div>
       </details>
 
@@ -119,7 +120,7 @@
         <button id="asciiBtn">Export ASCII</button>
         <button id="useOutputBtn" title="Freeze the processed output and use it as the next source">Bake output → source</button>
       </div>
-      <div class="promptTips">Prompt words still influence procedural structure. General source engines can also be configured directly, so useful output no longer depends on knowing specific keywords.</div>
+      <div class="promptTips">Keywords guide patterns and colors; they do not describe arbitrary scenes. Choose an engine for structure, a palette for color, and a seed for a repeatable variation.</div>
     </div>
     <div id="drop" class="drop">
       <strong>Drop an image or video here</strong>
@@ -143,7 +144,7 @@
   </section>
   <aside class="panel">
     <div class="presets cardless">
-      <div class="sectionTitle"><strong>4. FX scenes</strong><span>starting points; each rack remains configurable</span></div>
+      <div class="sectionTitle"><strong>Effect looks</strong><span>Change the look, keep the source</span></div>
       <div class="presetGrid">
         <button data-preset="clean">Clean</button><button data-preset="xerox">Xerox</button><button data-preset="neon">Neon</button><button data-preset="acid">Acid</button>
         <button data-preset="cctv">CCTV</button><button data-preset="mosh">Mosh</button><button data-preset="ascii">ASCII</button><button data-preset="thermal">Thermal</button>
@@ -165,7 +166,7 @@
     </div>
 
     <div class="configurator">
-      <h3>5. Effect configuration</h3>
+      <h3>Find &amp; adjust effects</h3>
       <div class="configRow">
         <select id="configMode" title="Simple hides automation rows; Expert shows every rate/LFO/sweep control"><option value="simple">Simple controls</option><option value="expert" selected>Expert automation</option></select>
         <input id="effectSearch" type="search" placeholder="Find effect…">
