@@ -1,0 +1,14 @@
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import vm from 'node:vm';
+const source=readFileSync(new URL('../main.js',import.meta.url),'utf8');
+const created=[],revoked=[];let alerts=0,undos=0;
+const media={pause(){},removeAttribute(){},play:()=>Promise.resolve()};
+const context=vm.createContext({URL:{createObjectURL(file){const url=`blob:${created.length}`;created.push(file);return url;},revokeObjectURL(url){revoked.push(url);}},pushUndo(){undos++;},alert(){alerts++;},placeholder:{style:{}},video:{...media},img:{...media},sync(){},resize(){},drawOnce(){},loopStart(){}});
+vm.runInContext(source.slice(source.indexOf('let mediaObjectUrl='),source.indexOf('file.onchange=')),context);
+vm.runInContext("load({type:'image/png'}); load({type:'video/mp4'})",context);
+assert.deepEqual(revoked,['blob:0']);assert.equal(created.length,2);
+vm.runInContext("load({type:'application/pdf'})",context);
+assert.equal(alerts,1);assert.equal(undos,2);assert.equal(created.length,2);
+assert.equal(vm.runInContext('media',context),'video');
+console.log('Media OK: replaced object URLs released; unsupported input preserves current media.');
