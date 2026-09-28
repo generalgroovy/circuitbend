@@ -4,7 +4,7 @@
   "private": true,
   "description": "Streamlined offline generative media sandbox with pixel/ASCII, mathematical visuals and freely scalable live viewers",
   "scripts": {
-    "test": "node tests/smoke.mjs && node tests/pages.mjs && node tests/media.mjs"
+    "test": "node tests/smoke.mjs && node tests/pages.mjs && node tests/media.mjs && node --test tests/workspace.mjs"
   },
   "engines": {
     "node": ">=18"

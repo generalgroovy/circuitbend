@@ -44,9 +44,9 @@ Workspace/viewer preferences, snapshots and named presets use local storage. The
 | R | Mutate effects |
 | S | Export PNG |
 | Ctrl/Cmd + Z | Undo parameter state |
-| Escape | Close the More menu |
+| Escape | Close the More menu and return focus to its summary |
 
-Most shortcuts are ignored while an input, text area or select has focus. Ctrl/Cmd + Enter is the explicit exception. Undo concerns application parameter snapshots; it does not recover a discarded original media file.
+Playback and single-letter shortcuts leave focused controls, buttons, links and editable text to their normal keyboard behavior. Ctrl/Cmd + Enter is the explicit exception. Undo concerns application parameter snapshots; it does not recover a discarded original media file.
 
 ## Run locally
 

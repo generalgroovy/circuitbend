@@ -54,7 +54,7 @@
     if(!proxy||!source)return;
     const sourceEvent=source.tagName==='INPUT'&&source.type==='range'?'input':type;
     proxy.addEventListener(type,()=>{
-      if(syncing)return;syncing=true;source.value=proxy.value;fire(source,sourceEvent);fire(source,'change');syncing=false;updateSummary();
+      if(syncing)return;syncing=true;source.value=proxy.value;fire(source,sourceEvent);if(sourceEvent!=='change')fire(source,'change');syncing=false;updateSummary();
     });
     const sync=()=>{if(syncing)return;syncing=true;proxy.value=source.value;syncing=false;updateSummary()};
     source.addEventListener('input',sync);source.addEventListener('change',sync);
@@ -73,13 +73,21 @@
     byId('quickVariation')?.addEventListener('click',()=>click('variationBtn'));
   }
 
+  function closeMoreMenu(){
+    const menu=byId('moreMenu');
+    if(!menu?.open)return false;
+    menu.open=false;
+    menu.querySelector('summary')?.focus();
+    return true;
+  }
+
   function moveSecondaryActions(){
     const box=byId('moreActions');if(!box)return;
     const ids=['fullBtn','undoBtn','resetBtn','randomBtn','chaosBtn','exportFullBtn','projectSaveBtn'];
     for(const id of ids){const n=byId(id);if(n)box.appendChild(n)}
     const projectFile=byId('projectFile')?.closest('label');if(projectFile)box.appendChild(projectFile);
     const browserSave=byId('savePresetBtn'),browserLoad=byId('loadPresetBtn');if(browserSave)box.appendChild(browserSave);if(browserLoad)box.appendChild(browserLoad);
-    box.addEventListener('click',e=>{if(e.target.closest('button,.filebtn')){const menu=byId('moreMenu');if(menu)menu.open=false}});
+    box.addEventListener('click',e=>{if(e.target.closest('button,.filebtn'))closeMoreMenu()});
   }
 
   function setDetails(openIds=[]){
@@ -139,7 +147,7 @@
       }
       if((e.ctrlKey||e.metaKey)&&e.key==='Enter'){e.preventDefault();click('generateBtn');return}
       if(e.altKey&&/^[1-5]$/.test(e.key)){e.preventDefault();setTask(Object.keys(tasks)[Number(e.key)-1]);return}
-      if(e.key==='Escape'){const menu=byId('moreMenu');if(menu?.open)menu.open=false}
+      if(e.key==='Escape'&&closeMoreMenu())e.preventDefault()
     });
   }
 
