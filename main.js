@@ -75,7 +75,8 @@ function toggleSweep(k,dir){if(sweep[k]?.timer&&sweep[k].dir===dir){stopSweep(k)
 function stopSweep(k){if(sweep[k]?.timer)clearInterval(sweep[k].timer);sweep[k]={timer:null,dir:0}}
 function stopAllSweeps(){for(const k in sweep)stopSweep(k)}
 function sync(input){document.querySelectorAll('[data-k]').forEach(el=>{const k=el.dataset.k;if(input||document.activeElement!==el)el.value=s[k];const v=$('v-'+k);if(v)v.textContent=(+s[k]).toFixed((el.step||'1').includes('.')?1:0)});document.querySelectorAll('[data-bool]').forEach(el=>{if(input)el.checked=!!s[el.dataset.bool]});document.querySelectorAll('[data-sweep]').forEach(btn=>{const k=btn.dataset.sweep,dir=+btn.dataset.dir;btn.classList.toggle('active',!!sweep[k]?.timer&&sweep[k].dir===dir)});document.querySelectorAll('.group').forEach(g=>{const on=groupEnabled[g.dataset.group]!==false;g.classList.toggle('bypassed',!on);const b=g.querySelector('[data-bypass]');if(b)b.textContent=on?'Bypass':'Enable'});seedRead.textContent=`seed ${seedEl.value}`;fpsRead.textContent=`${drawFps} fps`;recordRead.textContent=recorder&&recorder.state==='recording'?'recording':'idle';readout.textContent=`${media} ${ready?'ready':'empty'} · ${canvas.width}×${canvas.height} · ${playing?'animated':'still'} · ${Object.values(groupEnabled).filter(Boolean).length}/${groups.length} racks`}
-function effectiveState(live){const out={...live};for(const[k,name]of Object.entries(keyGroup))if(groupEnabled[name]===false)out[k]=defaults[k];return out}
+let previewOriginal=false;
+function effectiveState(live){const out={...live};for(const[k,name]of Object.entries(keyGroup))if(groupEnabled[name]===false||(previewOriginal&&name!=='Render'))out[k]=defaults[k];return out}
 
 let mediaObjectUrl=null;
 function load(f){

@@ -139,6 +139,32 @@
     const fxTitle=document.querySelector('.panel .sectionTitle span');if(fxTitle)fxTitle.textContent='presets';
   }
 
+  function buildPreviewWorkflow(){
+    const stage=document.querySelector('.stage'),preview=document.querySelector('.preview'),status=document.querySelector('.status');
+    if(!stage||!preview)return;
+    const tools=el('div',{class:'previewWorkflow'});
+    const select=el('select',{id:'quickLook','aria-label':'FX preset'});
+    select.appendChild(el('option',{value:'',text:'FX preset…'}));
+    document.querySelectorAll('[data-preset]').forEach(button=>select.appendChild(el('option',{value:button.dataset.preset,text:button.textContent})));
+    select.addEventListener('change',()=>{if(!select.value)return;applyPreset(select.value);updateSummary()});
+    const compare=el('button',{id:'compareOriginal',text:'Compare original','aria-pressed':'false'});
+    compare.addEventListener('click',()=>{
+      previewOriginal=!previewOriginal;
+      window.circuitbendViewer?.importState({source:'output'});
+      compare.textContent=previewOriginal?'Show processed':'Compare original';
+      compare.setAttribute('aria-pressed',String(previewOriginal));
+      renderStaticIfNeeded();
+    });
+    tools.append(select,compare);
+    stage.prepend(tools,preview);
+    if(status)preview.after(status);
+    const active=byId('activeEffects');
+    if(active){const details=el('details',{class:'previewEffects'});details.append(el('summary',{text:'Adjusted effects'}),active);status?.after(details)}
+    const info=el('details',{id:'workspaceInfo',class:'workspaceInfo'});
+    info.innerHTML='<summary>Info</summary><p>Generate a source or open media, choose an FX preset, then adjust its controls. Compare original bypasses effects without changing their settings; PNG exports the visible result.</p><p>Processing order is fixed. Adjusted effects lists changed settings, including parameters that may depend on another effect being enabled.</p><p>Ctrl/Cmd+Enter: generate · Alt+1–5: workflow tabs · Space: playback outside controls. More contains Undo, project save/load, and browser snapshots. Project files do not include original imported media.</p>';
+    byId('streamBar')?.appendChild(info);
+  }
+
   function bindKeyboard(){
     document.addEventListener('keydown',e=>{
       const tag=e.target?.tagName;if(tag==='INPUT'||tag==='TEXTAREA'||tag==='SELECT'){
@@ -152,7 +178,7 @@
   }
 
   function bind(){
-    loadLocal();injectStyles();buildTaskbar();buildQuickControls();moveSecondaryActions();simplifyLabels();bindKeyboard();
+    loadLocal();injectStyles();buildTaskbar();buildQuickControls();moveSecondaryActions();simplifyLabels();buildPreviewWorkflow();bindKeyboard();
     document.querySelectorAll('[data-task]').forEach(b=>b.addEventListener('click',()=>setTask(b.dataset.task)));
     byId('focusToggle')?.addEventListener('click',()=>{state.focus=!state.focus;applyFocus()});
     byId('previewPin')?.addEventListener('click',()=>{state.previewPinned=!state.previewPinned;applyPreviewPin()});

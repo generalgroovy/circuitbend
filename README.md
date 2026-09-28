@@ -6,8 +6,8 @@
 
 1. In **Create**, choose an engine, render mode and seed, then **Generate**. **Variation** changes the seed. Source presets provide checkerboards, calibration cards, gradients and other reference patterns.
 2. Use **Math** for mathematical generators, **Style** for palettes and glyph rendering, and **FX** for effect racks. Start with a small canvas and a few effects.
-3. Preview the result. Pin, float or open the preview in a separate window when useful; preview zoom changes display size, not export resolution.
-4. Open **Export** for output/project controls. **More** contains secondary actions. **Focus** keeps the workspace compact; **Full** exposes the larger set of controls.
+3. The preview comes first. Select an **FX preset** beside it; **Compare original** temporarily bypasses effects while retaining render resolution and all parameter values. **Show processed** restores the effect view. PNG exports the currently visible result. **Adjusted effects** discloses changed settings, including dependent parameters. Pin, float or open the preview in a separate window when useful; preview zoom changes display size, not export resolution.
+4. Open **Export** for output/project controls. **More** contains secondary actions. **Focus** keeps the workspace compact; **Full** exposes the larger set of controls. **Info** holds workflow/shortcut/project notes; the compact workspace keeps controls readable and uses larger phone targets.
 
 The complete workstation remains available: pixel/ASCII/hybrid/ANSI/braille rendering, image/video input, one imported-media overlay, presets, per-rack bypass, modulation and bake-output-to-source. Effects are applied in the implemented processing order; this is not a freely reorderable node graph.
 
