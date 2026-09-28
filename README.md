@@ -1,325 +1,93 @@
 # Circuitbend Sandbox
 
-A dependency-free browser playground for generating, layering, scaling, circuit-bending, automating and exporting visual media.
+[Open Circuitbend](https://generalgroovy.github.io/circuitbend/). Create procedural images, transform imported media, combine effects, and export the result. The app runs locally in the browser without a build step, account, API key or model download.
 
-**Live app:** https://generalgroovy.github.io/circuitbend/
+## Start with one workflow
 
-Everything runs locally in the browser. There is no build step, server requirement, API key, model download or cloud dependency.
+1. In **Create**, choose an engine, render mode and seed, then **Generate**. **Variation** changes the seed. Source presets provide checkerboards, calibration cards, gradients and other reference patterns.
+2. Use **Math** for mathematical generators, **Style** for palettes and glyph rendering, and **FX** for effect racks. Start with a small canvas and a few effects.
+3. Preview the result. Pin, float or open the preview in a separate window when useful; preview zoom changes display size, not export resolution.
+4. Open **Export** for output/project controls. **More** contains secondary actions. **Focus** keeps the workspace compact; **Full** exposes the larger set of controls.
 
-## Configuration model
+The complete workstation remains available: pixel/ASCII/hybrid/ANSI/braille rendering, image/video input, one imported-media overlay, presets, per-rack bypass, modulation and bake-output-to-source. Effects are applied in the implemented processing order; this is not a freely reorderable node graph.
 
-The UI is organized around a simple flow:
+## Source and output size
 
-```text
-1. Source
-   ↓
-2. Canvas & output scale
-   ↓
-3. Palette & imported-media layer
-   ↓
-4. FX scenes / racks
-   ↓
-5. Effect configuration & automation
-   ↓
-Export / bake / project file
-```
+Source width/height can reach 4096 pixels. Choose final dimensions first, then keep the **Live effect budget** around 1–2 MP while editing large work. Live scale/quality and the budget affect the processed preview; preview zoom only changes presentation.
 
-This separates source creation from render resolution, compositing and downstream effects.
+- **PNG** captures the current processed output resolution.
+- **Full-res PNG** renders at the source dimensions, temporarily using the larger processing size.
+- **ASCII** exports generated character output.
+- **Record WebM** captures the canvas when the browser supports MediaRecorder/canvas capture.
+- **Bake output → source** makes the processed image the new source for another effects pass.
 
-## General source and reference material
+Reduce live resolution, FPS or expensive temporal/pixel effects if interaction slows. Large canvases and multiple buffers consume substantial memory; browser and device limits still apply.
 
-Circuitbend no longer depends mainly on thematic prompt words. The source engine can be selected directly.
+## Imported media and project files
 
-Available engines:
+Use **Open media** or drop an image/video. Replacing media releases its previous object URL. Unsupported file types leave the active source intact. Browser-supported formats determine what can be decoded; imported media stays local to the browser.
 
-- **Math field** — deterministic trigonometric structures.
-- **Cellular** — cellular/noise patterns.
-- **Imported reference** — pixel/ASCII conversion of an image or video.
-- **Gradient / ramp** — linear, radial, grayscale and interference ramps.
-- **Geometry / sprites** — primitives, symbols, icon/sprite-like sheets and tiles.
-- **Calibration / test card** — color bars, grayscale ramps, grid, circles and alignment marks.
-- **Waveform / scope** — oscilloscope-style sine/multi-wave reference material.
-- **Mandala / radial** — spokes, concentric rings and symmetry/resolution patterns.
-- **Text / glyph sheet** — repeated text, alphabet, numbers and symbol references.
-- **Noise / texture** — deterministic multi-scale texture fields.
+**Project JSON** saves the editable configuration in the current `circuitbend-project` format, version **6**: generator settings, effects, modulation, output settings and workspace/viewer state. **Load project** restores compatible project files; newer version numbers are rejected.
 
-Built-in source/reference presets include Calibration card, Checkerboard, Gradient ramp, Radial resolution, Geometry sheet, Glyph/text sheet, Wave/scope, Mandala/symmetry, Noise/texture, Sprite primitives, Moiré field and Tile reference.
+Project JSON does **not** embed original imported image/video files. Keep those originals and reload them after restoring an external-media project; the initial restore uses a generated source. A baked source can be included as PNG data. Download a project file when you need portable state—browser-local snapshots and named presets are not a substitute for a backup.
 
-These are useful both as artwork sources and as controlled material for testing glitches, scaling, palette changes, thresholding, edge effects, feedback and export quality.
+Workspace/viewer preferences, snapshots and named presets use local storage. These are scoped to the site/browser, can be cleared, and are not account synchronization. There is no automatic durable recording of every edit or complete imported-media session.
 
-## Prompt, seed and render modes
+## Controls
 
-All procedural sources remain deterministic from their prompt/seed/settings.
+| Key | Action |
+|---|---|
+| Ctrl/Cmd + Enter | Generate, including while editing the prompt |
+| Alt + 1…5 | Create, Math, Style, FX, Export |
+| Space | Play/pause |
+| G | Generate |
+| R | Mutate effects |
+| S | Export PNG |
+| Ctrl/Cmd + Z | Undo parameter state |
+| Escape | Close the More menu |
 
-Render modes:
+Most shortcuts are ignored while an input, text area or select has focus. Ctrl/Cmd + Enter is the explicit exception. Undo concerns application parameter snapshots; it does not recover a discarded original media file.
 
-- **Pixel** — block/pixel rendering.
-- **ASCII** — glyph-field rendering.
-- **Hybrid** — pixel blocks with ASCII detail.
+## Run locally
 
-Motion modes:
+Serve this directory with a static HTTP server, for example:
 
-- Drift
-- Pulse
-- Orbit
-- Wave
-- Static
-
-Prompts remain useful as an additional structural control language. Words such as `grid`, `rings`, `sprite`, `tile`, `moire`, `city`, `forest`, `space`, `water`, `symmetry`, `organic`, `monochrome`, `warm` and `neon` influence suitable engines, but direct source controls are always available.
-
-## Scalable canvas and output
-
-Source dimensions are configurable from **64×64 up to 4096×4096**.
-
-Common presets include:
-
-- 256×256
-- 512×512
-- 1024×1024
-- 2048×2048
-- 4096×4096
-- 1280×720
-- 1920×1080
-- 3840×2160
-- 1080×1920
-- 1080×1080
-- 2480×3508
-
-The source canvas and live effect resolution are intentionally separate.
-
-**Live effect budget** caps the internal processing area from 0.5 to 17 megapixels. This lets you keep a large final source while editing at a lower live resolution.
-
-**Preview zoom** changes only the on-screen view. It does not change source or export dimensions.
-
-**Pixel-crisp preview** switches the display to nearest-neighbor presentation for pixel art inspection.
-
-**Full-res PNG** temporarily renders the current effect chain at the full source dimensions, up to the browser-safe project limit of roughly 17 megapixels, then restores the faster live settings.
-
-## Palette and source compositing
-
-Palette modes:
-
-- Prompt / auto
-- Monochrome
-- Warm
-- Cool
-- Neon
-- Earth
-- Game palette
-- RGB reference
-- Pastel
-- Custom four-color palette
-
-A hue-shift control can rotate generated palettes without modifying the rest of the source configuration.
-
-Imported image/video can also be retained as a layer over a generated/reference source. Layer controls include:
-
-- enable/disable
-- opacity
-- blend mode: Normal, Screen, Multiply, Overlay, Difference, Exclusion, Lighten, Darken
-- fit: Cover, Contain, Stretch or Native pixels
-- scale
-- rotation
-- X/Y pan
-
-This makes the source stage useful for collage, texture transfer, mixed reference material and circuit-bent compositing before downstream FX are applied.
-
-## Effect rack
-
-The rack includes:
-
-- brightness, contrast, saturation, hue, grayscale, inversion, solarize, duotone
-- threshold, ordered dither, posterization, bit depth and noise
-- RGB/chroma shift, pixelation and pixel sorting
-- block corruption, inverted blocks and datamosh-like temporal slicing
-- wobble, ripples, displacement, line offset, melt and shred
-- mirror, kaleidoscope and tiling
-- edge, glow, emboss, halftone and ASCII conversion
-- scanlines, scratches, animated color bands and strobe
-- tunnel, prism, ghost, echo and zoomed feedback
-
-Each rack now has explicit actions:
-
-- **Bypass / Enable**
-- **Random** — mutate only that rack
-- **Reset** — restore only that rack
-- **Copy / Paste** — transfer rack values
-- **Fold** — collapse the rack
-
-Numeric effects expose both a slider and an exact number field. Each control also has a concise description/tooltip.
-
-## Clear simple vs expert configuration
-
-The configuration bar provides two modes:
-
-- **Simple controls** — values only; rate/LFO/sweep rows are hidden.
-- **Expert automation** — exposes full automation for every numeric parameter.
-
-An effect search filters racks/parameters by name or description.
-
-An **active effects** summary shows which parameters currently differ from their defaults, so heavily modified scenes remain understandable.
-
-Racks can be expanded or folded globally.
-
-## Automation
-
-Most numeric effects expose:
-
-1. **Rate** — continuous change per second.
-2. **LFO** — sine, triangle, square, noise or beat modulation.
-3. **Sweep** — stepped left-to-right/right-to-left scanning with configurable jump and interval.
-
-Global controls provide master automation speed, two macros and BPM.
-
-## FX scenes, user presets and snapshots
-
-Built-in FX scenes include Clean, Xerox, Neon, Acid, CCTV, Mosh, ASCII, Thermal, Poster, Fracture, Ritual, Dirty VHS, Databend, Feedback, Terminal and Dream.
-
-Named **user presets** can now be stored in browser local storage and include generator, rack and advanced source/canvas/palette state.
-
-**Save browser snapshot** stores the current quick snapshot locally. **Load browser snapshot** restores it. **Undo** keeps an in-memory history during the current session.
-
-## Recursive circuit-bending
-
-**Bake output → source** freezes the processed frame and turns it into a new source:
-
-```text
-source → effects → bake → new effects → bake → ...
-```
-
-This makes destructive-looking multi-generation circuit-bending possible while keeping the active effect rack non-destructive until you intentionally bake.
-
-## Export
-
-- **PNG** — current live processed frame.
-- **Full-res PNG** — full source-size render with the current effect stack.
-- **ASCII** — text representation of the source/output.
-- **Record WebM** — records the processed canvas with `MediaRecorder` and `canvas.captureStream()` when supported.
-- **Project JSON** — portable project configuration. Baked still sources are embedded as PNG data.
-
-Recording is visual-only; audio is intentionally not captured.
-
-## Project files
-
-Project format v2 stores:
-
-- prompt, seed, engine, render mode and motion
-- source width/height, cell size and generator speed
-- palette mode, hue shift and custom colors
-- imported-media layer settings
-- live render budget, preview scale and display mode
-- all effect rack values and bypass states
-- rate/LFO automation
-- master speed, macros, BPM, quality and FX seed
-- baked still source when present
-
-Original imported image/video files are not embedded; reload those separately when required.
-
-## Run
-
-Published app:
-
-```text
-https://generalgroovy.github.io/circuitbend/
-```
-
-Or run locally:
-
-```bash
+```sh
 python -m http.server 8080
 ```
 
-Then open `http://localhost:8080`.
+Open `http://localhost:8080`. Keep all JavaScript/CSS files together: the project loader adds the math, streamlined workspace and preview modules dynamically. No `npm install` is needed.
 
-No npm install is required to run the app.
+## Verify changes
 
-## Test
+With Node.js 18 or newer:
 
-```bash
+```sh
 npm test
 ```
 
-The dependency-free suite checks JavaScript parsing, JavaScript-to-DOM references, core and advanced source/scaling/configuration entry points, project import/export hooks, and GitHub Pages-safe relative asset paths.
+On Windows, use `npm.cmd test` if PowerShell blocks `npm.ps1`. The suite checks script syntax, DOM references, relative asset paths and the media replacement/rejection lifecycle. It does not prove visual correctness for every effect or export combination.
 
-### Browser acceptance checklist
+A focused browser pass:
 
-After deployment, a useful manual pass is:
+1. Generate a reference preset; change mode, seed and one effect.
+2. Import an image, replace it, and confirm an unsupported drop leaves the source intact.
+3. Export PNG and Full-res PNG; inspect dimensions and appearance.
+4. Save/reload Project JSON, including a baked source. Separately verify external-media reloading.
+5. Check the compact/full workspace and preview window; test WebM only on browsers supporting recording.
 
-1. Apply **Calibration card**, **Wave / scope**, **Sprite primitives** and **Noise / texture** source presets.
-2. Switch each between Pixel, ASCII and Hybrid.
-3. Set 1920×1080 and 3840×2160 while keeping Live effect budget at 1–2 MP; confirm the source/live resolution readout differs as expected.
-4. Change palettes and custom colors.
-5. Load an image, generate a procedural source, enable **Layer imported media**, and test Cover/Contain plus Screen/Difference blends.
-6. Search for an effect, edit it with the exact number input, then Random/Reset/Copy/Paste/Fold its rack.
-7. Compare Simple controls with Expert automation.
-8. Export normal PNG and Full-res PNG.
-9. Save a named user preset and a Project JSON, reload each, and verify dimensions/palette/racks return.
-10. Bake output → source and continue bending the baked result.
+## Source map
 
-## Keyboard shortcuts
+| File | Responsibility |
+|---|---|
+| `index.html`, `style.css` | Base controls and layout |
+| `main.js` | Generator/effects engine, media loading, animation, recording |
+| `advanced.js`, `advanced.css` | Source presets, palettes, compositing, scale/output, rack controls |
+| `webview.js`, `webview.css` | Compact presentation and render-mode extensions |
+| `mathlab.js`, `mathlab.css` | Mathematical generators and their controls |
+| `streamlined.js`, `streamlined.css` | Task navigation, quick controls, focus/full workspace |
+| `preview-window.js`, `preview-window.css` | Pinned/floating/pop-out preview |
+| `project.js` | Project version 6 serialization, restore and module loading |
+| `tests/` | Dependency-free automated checks |
 
-| Key | Action |
-| --- | --- |
-| `Space` | Play/pause |
-| `G` | Generate/refresh source |
-| `R` | Mutate effects |
-| `S` | Export PNG |
-| `Ctrl/Cmd + Z` | Undo |
-
-Shortcuts are disabled while typing in an input, select or prompt field.
-
-## Architecture
-
-- `index.html` — workstation UI and explicit source/canvas/configuration controls.
-- `style.css` — base responsive workstation layout.
-- `advanced.css` — scalable-source and enhanced rack UI.
-- `main.js` — original generator/effect engine, source handling, animation, automation and recording.
-- `advanced.js` — general reference engines, palette/compositing, scalable canvas/output, rack clarity and user presets.
-- `project.js` — portable project v2 import/export.
-- `tests/` — dependency-free smoke and GitHub Pages compatibility checks.
-
-Processing path:
-
-```text
-prompt / reference engine / image / video
-               ↓
-          source canvas
-               ↓
-      optional media layer
-               ↓
-   live resolution / budget
-               ↓
- geometry + color + glitch FX
-               ↓
- print + optical + temporal FX
-               ↓
-          preview canvas
-       ├─ PNG / full-res PNG
-       ├─ ASCII
-       ├─ WebM
-       ├─ project JSON
-       └─ bake back to source
-```
-
-The app deliberately stays on browser Canvas 2D and static files so it remains inspectable, offline-first and directly deployable on GitHub Pages.
-
-## Performance guidance
-
-For large work:
-
-1. Choose the desired final source/output dimensions first.
-2. Keep Live effect budget around 1–2 MP while designing.
-3. Use Draft/Fast/Balanced quality for expensive stacks.
-4. Reduce FPS when using ASCII, edge, sort, feedback or many temporal operations.
-5. Use Full-res PNG only for the final still render.
-6. 4K and 4096-square sources can consume substantial browser memory, especially with multiple temporal buffers.
-
-## Good next extensions
-
-- draggable effect ordering / user-defined effect chains
-- keyframe timeline and curve editor
-- multi-source layer stack rather than one imported overlay
-- GIF/APNG export
-- optional WebGL shader effects for faster large-resolution work
-- optional local image-model adapter while retaining procedural offline fallbacks
-- MIDI/OSC input for live visual performance
+Use this README for the supported workflow and boundaries; source code defines exact parameter ranges and processing behavior.
