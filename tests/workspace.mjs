@@ -83,3 +83,14 @@ test('FX mix gesture has one undo, preserves precise endpoints, and old snapshot
   vm.runInContext('setFxMix(undefined)',context);assert.equal(context.fxMix,1);
   vm.runInContext('setFxMix(NaN)',context);assert.equal(context.fxMix,1);
 });
+
+
+test('named presets retain FX mix and applying one creates a single undo',()=>{
+  const advanced=readFileSync(new URL('../advanced.js',import.meta.url),'utf8');
+  let saved={},undos=0,generated;
+  const context=vm.createContext({fxMix:.35,base:{rgb:30},s:{},defaults:{rgb:0},groupEnabled:{},controlsAdv:{userPresetName:{value:'Soft look'},userPresetSelect:{value:''}},readUserPresets:()=>saved,writeUserPresets:x=>{saved=x},exportAdvancedState:()=>({}),importAdvancedState(){},sync(){},syncNumeric(){},renderActiveEffects(){},pushUndo(){undos++},startGenerated:undo=>{generated=undo},setFxMix:v=>{context.fxMix=v??1}});
+  for(const name of ['promptEl','seedEl','genMode','genEngine','genMotion','genW','genH','cellSize','genSpeed'])context[name]={value:'10'};
+  vm.runInContext(advanced.slice(advanced.indexOf('  function saveUserPreset('),advanced.indexOf('  function deleteUserPreset(')),context);
+  vm.runInContext('saveUserPreset();fxMix=1;applyUserPreset()',context);
+  assert.equal(context.fxMix,.35);assert.equal(saved['Soft look'].fxMix,.35);assert.equal(undos,1);assert.equal(generated,false);
+});
