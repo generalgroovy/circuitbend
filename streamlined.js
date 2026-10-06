@@ -200,6 +200,7 @@
     observer.observe(genEngine,{childList:true,subtree:true});observer.observe(genMode,{childList:true,subtree:true});
     applyPreviewPin();applyFocus();updateSummary();
     window.circuitbendWorkspace={
+      syncSource:()=>{copySelectOptions(genEngine,byId('quickEngine'));copySelectOptions(genMode,byId('quickMode'));byId('quickSeed').value=seedEl.value;byId('quickCell').value=cellSize.value;updateSummary()},
       syncMix:()=>{const mix=byId('fxMix'),value=byId('fxMixValue');if(mix)mix.value=String(Math.round(fxMix*100));if(value)value.textContent=`${Math.round(fxMix*100)}%`},
       exportState:()=>({...state}),
       importState:x=>{if(!x)return;Object.assign(state,x);applyPreviewPin();applyFocus()},

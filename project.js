@@ -67,12 +67,14 @@
     window.circuitbendAdvanced?.importState?.(p.advanced);
     window.circuitbendWebview?.importState?.(p.webview);
     window.circuitbendMath?.importState?.(p.mathview);
+    // Math Lab remembers its own engine; the saved source remains authoritative.
+    setSelect(genEngine,g.engine);
     window.circuitbendWorkspace?.importState?.(p.workspace);
     window.circuitbendViewer?.importState?.(p.viewer);
     syncModulationControls();
     if(restoreImg){sourceCanvas.width=restoreImg.naturalWidth;sourceCanvas.height=restoreImg.naturalHeight;sourceCtx.drawImage(restoreImg,0,0);media='baked';inputMedia='none';playing=false;restoreImg.removeAttribute('src')}
     else{media='generated';playing=genMotion.value!=='static';generateSource(0)}
-    ready=true;placeholder.style.display='none';resize();drawOnce();loopStart();sync(true);syncModulationControls();mediaStatus();
+    ready=true;placeholder.style.display='none';resize();drawOnce();loopStart();sync(true);syncModulationControls();window.circuitbendWorkspace?.syncSource?.();mediaStatus();
   }
   saveBtn.addEventListener('click',saveProject);
   fileInput.addEventListener('change',loadProjectFile);

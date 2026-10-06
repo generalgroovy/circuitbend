@@ -30,6 +30,9 @@ try{
     await page.locator('#fxMix').press('Home');await page.locator('#fxMix').press('ArrowRight');
     await page.locator('#moreMenu > summary').click();const [project]=await Promise.all([page.waitForEvent('download'),page.locator('#projectSaveBtn').click()]);const projectBytes=await readFile(await project.path());assert.equal(JSON.parse(projectBytes).effects.mix,.01);
     await page.locator('#fxMix').press('End');await page.locator('#projectFile').setInputFiles({name:'roundtrip.json',mimeType:'application/json',buffer:projectBytes});await page.waitForFunction(()=>document.getElementById('fxMixValue').textContent==='1%');
+    const savedEngine=JSON.parse(projectBytes).generator.engine;
+    assert.equal(await page.locator('#genEngine').inputValue(),savedEngine);
+    assert.equal(await page.locator('#quickEngine').inputValue(),savedEngine);
     // Version 6 files without the optional mix retain the original full-look behavior.
     const legacy=JSON.parse(projectBytes);delete legacy.effects.mix;await page.locator('#projectFile').setInputFiles({name:'legacy.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(legacy))});await page.waitForFunction(()=>document.getElementById('fxMixValue').textContent==='100%');
     await page.locator('#playBtn').click();
