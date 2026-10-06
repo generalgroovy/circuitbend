@@ -1,5 +1,6 @@
 const $ = id => document.getElementById(id);
-const video=$('video'),img=$('image'),sourceCanvas=$('sourceCanvas'),sourceCtx=sourceCanvas.getContext('2d',{willReadFrequently:true}),canvas=$('canvas'),ctx=canvas.getContext('2d',{willReadFrequently:true});
+let video=$('video'),img=$('image');
+const sourceCanvas=$('sourceCanvas'),sourceCtx=sourceCanvas.getContext('2d',{willReadFrequently:true}),canvas=$('canvas'),ctx=canvas.getContext('2d',{willReadFrequently:true});
 const file=$('file'),drop=$('drop'),readout=$('readout'),controls=$('controls'),placeholder=$('placeholder');
 const master=$('master'),macroA=$('macroA'),macroB=$('macroB'),bpm=$('bpm'),quality=$('quality'),fxSeed=$('fxSeed');
 const promptEl=$('prompt'),genMode=$('genMode'),genEngine=$('genEngine'),genMotion=$('genMotion'),seedEl=$('seed'),genW=$('genW'),genH=$('genH'),cellSize=$('cellSize'),genSpeed=$('genSpeed');
@@ -47,7 +48,8 @@ const presets={
 let s={...defaults},base={...defaults},rate={},lfo={},sweep={},groupEnabled={},keyGroup={};
 let media='none',inputMedia='none',ready=false,playing=false,last=0,lastDraw=0,frame=0,started=false,drawFps=0,fpsWindow=performance.now(),fpsFrames=0;
 let tmp=document.createElement('canvas'),tctx=tmp.getContext('2d',{willReadFrequently:true}),fx=document.createElement('canvas'),fctx=fx.getContext('2d',{willReadFrequently:true}),echo=document.createElement('canvas'),ectx=echo.getContext('2d',{willReadFrequently:true});
-let undoStack=[],fxRandom=Math.random,recorder=null,recordChunks=[];
+let undoStack=[],fxRandom=Math.random,recorder=null,recordChunks=[],fxMix=1;
+const dryCanvas=document.createElement('canvas'),dryCtx=dryCanvas.getContext('2d');
 
 function label(k){return k.replace(/([A-Z])/g,' $1').replace(/^./,c=>c.toUpperCase())}
 function clamp(v,min,max){return Math.max(min,Math.min(max,v))}
@@ -59,9 +61,10 @@ function mulberry32(a){return function(){let t=a+=0x6D2B79F5;t=Math.imul(t^t>>>1
 function rnd(){return fxRandom()}
 function coordNoise(x,y,z=0){const n=hash32(`${seedEl.value}|${promptEl.value}|${x}|${y}|${z}`);return(n>>>0)/4294967295}
 function download(name,href){const a=document.createElement('a');a.download=name;a.href=href;a.click()}
-function snapshot(){return{base:{...base},s:{...s},groupEnabled:{...groupEnabled},prompt:promptEl.value,seed:seedEl.value,fxSeed:fxSeed.value}}
+function snapshot(){return{base:{...base},s:{...s},groupEnabled:{...groupEnabled},prompt:promptEl.value,seed:seedEl.value,fxSeed:fxSeed.value,fxMix}}
 function pushUndo(){undoStack.push(snapshot());if(undoStack.length>40)undoStack.shift()}
-function restoreSnapshot(x){if(!x)return;stopAllSweeps();base={...defaults,...x.base};s={...defaults,...x.s};groupEnabled={...groupEnabled,...x.groupEnabled};if(x.prompt!=null)promptEl.value=x.prompt;if(x.seed!=null)seedEl.value=x.seed;if(x.fxSeed!=null)fxSeed.value=x.fxSeed;sync(true);renderStaticIfNeeded()}
+function restoreSnapshot(x){if(!x)return;stopAllSweeps();base={...defaults,...x.base};s={...defaults,...x.s};groupEnabled={...groupEnabled,...x.groupEnabled};if(x.prompt!=null)promptEl.value=x.prompt;if(x.seed!=null)seedEl.value=x.seed;if(x.fxSeed!=null)fxSeed.value=x.fxSeed;setFxMix(x.fxMix);sync(true);renderStaticIfNeeded()}
+function setFxMix(value){fxMix=typeof value==='number'&&Number.isFinite(value)?clamp(value,0,1):1;window.circuitbendWorkspace?.syncMix?.()}
 
 function initState(resetGroups=false){s={...defaults};base={...defaults};for(const k in ranges){rate[k]=0;lfo[k]={mode:'off',amt:0,hz:1};if(!sweep[k])sweep[k]={timer:null,dir:0}}if(resetGroups||!Object.keys(groupEnabled).length)for(const [name,keys] of groups){groupEnabled[name]=true;for(const k of keys)keyGroup[k]=name}}
 function build(){controls.innerHTML='';for(const [name,keys] of groups){const g=document.createElement('section');g.className='group';g.dataset.group=name;g.innerHTML=`<div class="groupHead"><h2>${name}</h2><button type="button" data-bypass="${name}">Bypass</button></div>`;keys.forEach(k=>g.appendChild(control(k)));controls.appendChild(g)}sync(true)}
@@ -78,24 +81,43 @@ function sync(input){document.querySelectorAll('[data-k]').forEach(el=>{const k=
 let previewOriginal=false;
 function effectiveState(live){const out={...live};for(const[k,name]of Object.entries(keyGroup))if(groupEnabled[name]===false||(previewOriginal&&name!=='Render'))out[k]=defaults[k];return out}
 
-let mediaObjectUrl=null;
+let mediaObjectUrl=null,pendingMedia=null,sourceRevision=0,pendingRestoreCleanup=null;
+function beginSourceChange(){sourceRevision++;cancelMediaLoad();pendingRestoreCleanup?.();pendingRestoreCleanup=null;return sourceRevision}
+function mediaStatus(message='',error=false){const status=$('mediaStatus');status.textContent=message;status.dataset.error=String(error);status.hidden=!message;$('cancelMedia').hidden=!pendingMedia}
+function releaseMediaElement(element){element.onload=element.onloadeddata=element.onerror=null;element.pause?.();element.removeAttribute('src');if(element.tagName==='VIDEO')element.load()}
+function cancelMediaLoad(message=''){if(pendingMedia){const pending=pendingMedia;pendingMedia=null;clearTimeout(pending.timer);releaseMediaElement(pending.element);URL.revokeObjectURL(pending.url)}mediaStatus(message)}
 function load(f){
-  if(!f||!/^image\/|^video\//.test(f.type||'')){alert('Choose an image or video file.');return}
-  pushUndo();
-  const url=URL.createObjectURL(f);
-  ready=false;placeholder.style.display='none';video.pause();video.removeAttribute('src');img.removeAttribute('src');
-  if(mediaObjectUrl)URL.revokeObjectURL(mediaObjectUrl);
-  mediaObjectUrl=url;frame=0;
-  if(f.type.startsWith('image/')){
-    inputMedia='image';media='image';playing=false;
-    img.onload=()=>{ready=true;resize();drawOnce();loopStart()};img.src=url;
-  }else{
-    inputMedia='video';media='video';playing=true;video.src=url;
-    video.onloadedmetadata=()=>{ready=true;resize();video.play().catch(()=>{});loopStart()};
-  }
-  sync(false);
+  beginSourceChange();
+  if(!f||!/^(image|video)\//.test(f.type||'')){mediaStatus('Choose an image or video file. Your current source is unchanged.',true);return}
+  const kind=f.type.startsWith('image/')?'image':'video',limit=kind==='image'?64:512;
+  if(f.size>limit*1024*1024){mediaStatus(`Choose ${kind==='image'?'an image':'a video'} under ${limit} MB. Your current source is unchanged.`,true);return}
+  const element=document.createElement(kind==='image'?'img':'video'),url=URL.createObjectURL(f);
+  const pending={element,url,timer:null};pendingMedia=pending;
+  const fail=message=>{if(pendingMedia!==pending)return;cancelMediaLoad();mediaStatus(message,true)};
+  const commit=()=>{
+    if(pendingMedia!==pending)return;
+    const w=kind==='image'?element.naturalWidth:element.videoWidth,h=kind==='image'?element.naturalHeight:element.videoHeight;
+    if(!w||!h||w*h>32e6||Math.max(w,h)>16384){fail('Choose media up to 32 megapixels and 16,384 pixels per side. Your current source is unchanged.');return}
+    clearTimeout(pending.timer);pendingMedia=null;
+    element.onload=element.onloadeddata=element.onerror=null;
+    video.pause();releaseMediaElement(video);releaseMediaElement(img);
+    if(mediaObjectUrl)URL.revokeObjectURL(mediaObjectUrl);
+    mediaObjectUrl=url;
+    if(kind==='image'){element.id='image';element.alt='Uploaded source';img.replaceWith(element);img=element}
+    else{element.id='video';video.replaceWith(element);video=element}
+    media=inputMedia=kind;ready=true;playing=kind==='video';frame=0;placeholder.style.display='none';
+    resize();drawOnce();loopStart();mediaStatus();sync(false);
+    if(kind==='video')video.play().catch(()=>{if(video!==element||mediaObjectUrl!==url||media!=='video')return;playing=false;sync(false);mediaStatus('Video loaded. Press Play to start.')});
+  };
+  element.onerror=()=>fail('This file could not be opened. Try another image or video format. Your current source is unchanged.');
+  if(kind==='image')element.onload=commit;
+  else{element.loop=true;element.muted=true;element.playsInline=true;element.preload='auto';element.onloadeddata=commit}
+  pending.timer=setTimeout(()=>fail('Loading timed out. Try a smaller file or another format. Your current source is unchanged.'),30000);
+  mediaStatus(`Opening ${f.name||kind}…`);element.src=url;
 }
-file.onchange=e=>e.target.files[0]&&load(e.target.files[0]);['dragenter','dragover'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.add('drag')}));['dragleave','drop'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.remove('drag')}));drop.addEventListener('drop',e=>{e.preventDefault();drop.classList.remove('drag');e.dataTransfer.files[0]&&load(e.dataTransfer.files[0])});
+$('cancelMedia').onclick=()=>cancelMediaLoad('Opening cancelled. Your current source is unchanged.');
+window.addEventListener('pagehide',()=>beginSourceChange());
+file.onchange=e=>{const selected=e.target.files[0];e.target.value='';if(selected)load(selected)};['dragenter','dragover'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.add('drag')}));['dragleave','drop'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.remove('drag')}));drop.addEventListener('drop',e=>{e.preventDefault();drop.classList.remove('drag');e.dataTransfer.files[0]&&load(e.dataTransfer.files[0])});
 function refSize(){return inputMedia==='video'?[video.videoWidth,video.videoHeight]:inputMedia==='image'?[img.naturalWidth,img.naturalHeight]:[0,0]}
 function refSource(){return inputMedia==='video'?video:img}
 function size(){if(media==='generated'||media==='baked')return[sourceCanvas.width,sourceCanvas.height];if(media==='video')return[video.videoWidth,video.videoHeight];if(media==='image')return[img.naturalWidth,img.naturalHeight];return[0,0]}
@@ -107,7 +129,7 @@ function loop(t){requestAnimationFrame(loop);if(!ready)return;const dt=Math.min(
 function drawOnce(){mods(performance.now()/1000,0);draw(performance.now())}
 function mods(time,dt){const masterSpeed=+(master?.value||1),ma=+(macroA?.value||0),mb=+(macroB?.value||0),beat=+(bpm?.value||120)/60;for(const k in ranges){const[min,max]=ranges[k];base[k]=clamp(base[k]+(rate[k]||0)*dt*masterSpeed,min,max);const m=lfo[k]||{mode:'off',amt:0,hz:1};let x=0,p=time*(m.mode==='beat'?beat:m.hz||1)*masterSpeed;if(m.mode==='sine')x=Math.sin(p*Math.PI*2);else if(m.mode==='tri')x=2*Math.abs(2*(p-Math.floor(p+.5)))-1;else if(m.mode==='square'||m.mode==='beat')x=Math.sin(p*Math.PI*2)>0?1:-1;else if(m.mode==='noise')x=mulberry32(hash32(`${fxSeed.value}|${k}|${Math.floor(time*10)}`))()*2-1;s[k]=clamp(base[k]+x*m.amt+(ma-mb)*m.amt*.2,min,max)}}
 function updateFps(t){fpsFrames++;if(t-fpsWindow>=500){drawFps=Math.round(fpsFrames*1000/(t-fpsWindow));fpsFrames=0;fpsWindow=t}}
-function draw(t){if(media==='generated')generateSource(t/1000);resize();frame++;updateFps(t);fxRandom=mulberry32(hash32(`${fxSeed.value}|${frame}`));const w=canvas.width,h=canvas.height;if(!w||!h)return;tctx.clearRect(0,0,w,h);tctx.save();tctx.translate(w/2,h/2);tctx.drawImage(src(),-w/2,-h/2,w,h);tctx.restore();const live=s;s=effectiveState(live);ctx.clearRect(0,0,w,h);if(s.echo){ctx.globalAlpha=s.echo/100;ctx.drawImage(echo,0,0);ctx.globalAlpha=1}if(s.feedbackZoom)feedback(w,h);if(s.mirror){ctx.save();ctx.translate(w,0);ctx.scale(-1,1);ctx.drawImage(tmp,0,0);ctx.restore()}else if(s.kaleido>1)kaleido(w,h);else if(s.tiles>1)tiles(w,h);else wobble(w,h,t);if(s.ripples)ripple(w,h,t);if(s.displace)displace(w,h,t);if(s.rgb||s.chromaNoise)rgbShift(t);pixels(w,h);if(s.glow)glow(w,h);if(s.edge)edge(w,h);if(s.emboss)emboss(w,h);if(s.half)half(w,h);if(s.ascii)asciiFx(w,h);if(s.pixel>1)pixelFx(w,h);if(s.sort)sortPix(w,h);if(s.blocks)blocksFx(w,h);if(s.blockInvert)invertBlocks(w,h);if(s.datamosh)datamosh(w,h);if(s.melt)melt(w,h);if(s.shred)shred(w,h);if(s.lineOffset)lineOffset(w,h,t);if(s.tunnel)tunnel(w,h);if(s.prism)prism(w,h,t);if(s.ghost)ghost(w,h,t);if(s.scan)scan(w,h,t);if(s.scratch)scratches(w,h);if(s.bands)bands(w,h,t);if(s.strobe&&Math.sin(t/1000*s.strobeRate*Math.PI*2)>0)flash(w,h);if(s.vignette)vignette(w,h);ectx.clearRect(0,0,w,h);ectx.drawImage(canvas,0,0);s=live;sync(false)}
+function draw(t,refreshSource=true){if(refreshSource&&media==='generated')generateSource(t/1000);resize();if(previewOriginal){ctx.clearRect(0,0,canvas.width,canvas.height);ctx.drawImage(src(),0,0,canvas.width,canvas.height);sync(false);return}frame++;updateFps(t);fxRandom=mulberry32(hash32(`${fxSeed.value}|${frame}`));const w=canvas.width,h=canvas.height;if(!w||!h)return;tctx.clearRect(0,0,w,h);tctx.save();tctx.translate(w/2,h/2);tctx.drawImage(src(),-w/2,-h/2,w,h);tctx.restore();if(fxMix<1){if(dryCanvas.width!==w||dryCanvas.height!==h){dryCanvas.width=w;dryCanvas.height=h}dryCtx.clearRect(0,0,w,h);dryCtx.drawImage(tmp,0,0)}const live=s;s=effectiveState(live);ctx.clearRect(0,0,w,h);if(s.echo){ctx.globalAlpha=s.echo/100;ctx.drawImage(echo,0,0);ctx.globalAlpha=1}if(s.feedbackZoom)feedback(w,h);if(s.mirror){ctx.save();ctx.translate(w,0);ctx.scale(-1,1);ctx.drawImage(tmp,0,0);ctx.restore()}else if(s.kaleido>1)kaleido(w,h);else if(s.tiles>1)tiles(w,h);else wobble(w,h,t);if(s.ripples)ripple(w,h,t);if(s.displace)displace(w,h,t);if(s.rgb||s.chromaNoise)rgbShift(t);pixels(w,h);if(s.glow)glow(w,h);if(s.edge)edge(w,h);if(s.emboss)emboss(w,h);if(s.half)half(w,h);if(s.ascii)asciiFx(w,h);if(s.pixel>1)pixelFx(w,h);if(s.sort)sortPix(w,h);if(s.blocks)blocksFx(w,h);if(s.blockInvert)invertBlocks(w,h);if(s.datamosh)datamosh(w,h);if(s.melt)melt(w,h);if(s.shred)shred(w,h);if(s.lineOffset)lineOffset(w,h,t);if(s.tunnel)tunnel(w,h);if(s.prism)prism(w,h,t);if(s.ghost)ghost(w,h,t);if(s.scan)scan(w,h,t);if(s.scratch)scratches(w,h);if(s.bands)bands(w,h,t);if(s.strobe&&Math.sin(t/1000*s.strobeRate*Math.PI*2)>0)flash(w,h);if(s.vignette)vignette(w,h);ectx.clearRect(0,0,w,h);ectx.drawImage(canvas,0,0);if(fxMix<1){tctx.clearRect(0,0,w,h);tctx.drawImage(canvas,0,0);ctx.save();ctx.clearRect(0,0,w,h);ctx.globalAlpha=1-fxMix;ctx.drawImage(dryCanvas,0,0);ctx.globalCompositeOperation='lighter';ctx.globalAlpha=fxMix;ctx.drawImage(tmp,0,0);ctx.restore()}s=live;sync(false)}
 
 function generatorConfig(){return{mode:genMode.value,engine:genEngine.value,motion:genMotion.value,seed:seedEl.value,prompt:promptEl.value.toLowerCase(),w:clamp(+genW.value||512,64,1024),h:clamp(+genH.value||512,64,1024),cell:clamp(+cellSize.value||8,2,32),speed:clamp(+genSpeed.value||1,0,4)}}
 function paletteFor(c){const h=hash32(`${c.seed}|${c.prompt}`)%360;let hues=[h,(h+42)%360,(h+178)%360,(h+300)%360];if(c.prompt.includes('warm'))hues=[10,28,48,340];if(c.prompt.includes('forest'))hues=[92,126,42,178];if(c.prompt.includes('water'))hues=[185,205,225,170];if(c.prompt.includes('space'))hues=[255,285,210,325];if(c.prompt.includes('monochrome'))hues=[h,h,h,h];if(c.prompt.includes('neon'))return hues.map((x,i)=>`hsl(${x} 100% ${i?58:38}%)`);return hues.map((x,i)=>`hsl(${x} ${c.prompt.includes('monochrome')?8:72}% ${34+i*11}%)`)}
@@ -116,9 +138,9 @@ function generateSource(time=0){const c=generatorConfig();if(sourceCanvas.width!
 function drawMath(c,time){const pal=paletteFor(c),tt=motionTime(c,time),cs=c.cell,w=c.w,h=c.h,chars=' .:-=+*#%@';sourceCtx.fillStyle='#05060b';sourceCtx.fillRect(0,0,w,h);const sym=c.prompt.includes('symmetry')||c.prompt.includes('mirror'),rings=c.prompt.includes('ring')||c.prompt.includes('orb'),grid=c.prompt.includes('grid')||c.prompt.includes('circuit'),city=c.prompt.includes('city'),space=c.prompt.includes('space'),organic=c.prompt.includes('organic')||c.prompt.includes('forest');sourceCtx.font=`${Math.max(6,cs)}px ui-monospace,monospace`;sourceCtx.textBaseline='top';for(let y=0;y<h;y+=cs)for(let x=0;x<w;x+=cs){let u=(x-w/2)/Math.min(w,h),v=(y-h/2)/Math.min(w,h);if(sym)u=Math.abs(u);let q=Math.sin((u*11+tt)*2.2)+Math.cos((v*9-tt*.7)*2.4)+Math.sin((u+v)*17+tt*.9);if(rings)q+=Math.sin(Math.hypot(u,v)*42-tt*3)*1.4;if(grid)q+=Math.sin(u*70)*.35+Math.sin(v*70)*.35;if(organic)q+=Math.sin(u*9+Math.cos(v*8+tt))*1.1;if(city){const skyline=.18+coordNoise(Math.floor(x/cs),0,2)*.42;q+=y/h>1-skyline?2.5:-.8}if(space&&coordNoise(Math.floor(x/cs),Math.floor(y/cs),7)>.965)q+=4;const jitter=(coordNoise(Math.floor(x/cs),Math.floor(y/cs),Math.floor(tt*3))-0.5)*1.4;let n=clamp((q+jitter+3.6)/7.2,0,1),idx=Math.min(pal.length-1,Math.floor(n*pal.length));if(c.mode==='ascii'){sourceCtx.fillStyle=pal[idx];sourceCtx.fillText(chars[Math.min(chars.length-1,Math.floor(n*chars.length))],x,y)}else{sourceCtx.fillStyle=pal[idx];sourceCtx.fillRect(x,y,cs,cs);if(c.mode==='hybrid'&&n>.62){sourceCtx.fillStyle=n>.82?'#fff9':'#0009';sourceCtx.fillText(chars[Math.min(chars.length-1,Math.floor(n*chars.length))],x,y)}}}}
 function drawCellular(c,time){const pal=paletteFor(c),cs=c.cell,w=c.w,h=c.h,chars=' ·:+#@',step=Math.floor(motionTime(c,time)*5),gx=Math.ceil(w/cs),gy=Math.ceil(h/cs);sourceCtx.fillStyle='#03050a';sourceCtx.fillRect(0,0,w,h);sourceCtx.font=`${Math.max(6,cs)}px ui-monospace,monospace`;sourceCtx.textBaseline='top';for(let y=0;y<gy;y++)for(let x=0;x<gx;x++){let sum=0;for(let yy=-1;yy<=1;yy++)for(let xx=-1;xx<=1;xx++)sum+=coordNoise((x+xx+gx)%gx,(y+yy+gy)%gy,step);const alive=sum/9>.51+(Math.sin(step*.3+x*.13-y*.09)*.035),n=alive?clamp((sum/9-.45)*3,0,1):coordNoise(x,y,step+99)*.16,idx=Math.min(pal.length-1,Math.floor(n*pal.length));sourceCtx.fillStyle=alive?pal[idx]:'#05070b';if(c.mode==='ascii')sourceCtx.fillText(chars[Math.min(chars.length-1,Math.floor(n*chars.length))],x*cs,y*cs);else{sourceCtx.fillRect(x*cs,y*cs,cs,cs);if(c.mode==='hybrid'&&alive){sourceCtx.fillStyle='#fff8';sourceCtx.fillText(chars[4],x*cs,y*cs)}}}}
 function drawReferenceGenerator(c,time){const[w,h]=refSize(),srcRef=refSource();sourceCtx.fillStyle='#000';sourceCtx.fillRect(0,0,c.w,c.h);sourceCtx.drawImage(srcRef,0,0,w,h,0,0,c.w,c.h);const cs=c.cell,small=document.createElement('canvas'),sc=small.getContext('2d',{willReadFrequently:true}),sw=Math.max(1,Math.ceil(c.w/cs)),sh=Math.max(1,Math.ceil(c.h/cs));small.width=sw;small.height=sh;sc.drawImage(sourceCanvas,0,0,sw,sh);const im=sc.getImageData(0,0,sw,sh),d=im.data,chars=' .:-=+*#%@';sourceCtx.fillStyle='#000';sourceCtx.fillRect(0,0,c.w,c.h);sourceCtx.font=`${Math.max(6,cs)}px ui-monospace,monospace`;sourceCtx.textBaseline='top';for(let y=0;y<sh;y++)for(let x=0;x<sw;x++){const i=(y*sw+x)*4,br=(d[i]+d[i+1]+d[i+2])/765,shift=Math.sin(motionTime(c,time)+y*.12)*cs*.35,px=x*cs+shift,py=y*cs;if(c.mode==='ascii'){sourceCtx.fillStyle=`rgb(${d[i]},${d[i+1]},${d[i+2]})`;sourceCtx.fillText(chars[Math.floor(br*(chars.length-1))],px,py)}else{sourceCtx.fillStyle=`rgb(${d[i]},${d[i+1]},${d[i+2]})`;sourceCtx.fillRect(px,py,cs,cs);if(c.mode==='hybrid'&&br>.55){sourceCtx.fillStyle='#fff9';sourceCtx.fillText(chars[Math.floor(br*(chars.length-1))],px,py)}}}}
-function startGenerated(){pushUndo();media='generated';ready=true;playing=genMotion.value!=='static';placeholder.style.display='none';generateSource(0);resize();drawOnce();loopStart();sync(false)}
+function startGenerated(){beginSourceChange();video.pause();pushUndo();media='generated';ready=true;playing=genMotion.value!=='static';placeholder.style.display='none';generateSource(0);resize();drawOnce();loopStart();sync(false)}
 function exportAscii(){if(!ready)return;const srcC=media==='generated'||media==='baked'?sourceCanvas:canvas,cols=80,ratio=srcC.height/srcC.width,rows=Math.max(8,Math.round(cols*ratio*.48)),c=document.createElement('canvas'),x=c.getContext('2d',{willReadFrequently:true});c.width=cols;c.height=rows;x.drawImage(srcC,0,0,cols,rows);const d=x.getImageData(0,0,cols,rows).data,chars=' .,:;irsXA253hMHGS#9B&@',lines=[];for(let y=0;y<rows;y++){let line='';for(let xx=0;xx<cols;xx++){const i=(y*cols+xx)*4,br=(d[i]+d[i+1]+d[i+2])/765;line+=chars[Math.floor(br*(chars.length-1))]}lines.push(line)}download('circuitbend-ascii.txt','data:text/plain;charset=utf-8,'+encodeURIComponent(lines.join('\n')))}
-function bakeOutput(){if(!canvas.width)return;pushUndo();sourceCanvas.width=canvas.width;sourceCanvas.height=canvas.height;sourceCtx.drawImage(canvas,0,0);media='baked';ready=true;playing=false;inputMedia='none';echo.width=canvas.width;echo.height=canvas.height;ectx.clearRect(0,0,echo.width,echo.height);drawOnce();sync(false)}
+function bakeOutput(){if(!ready||!canvas.width)return;beginSourceChange();video.pause();pushUndo();sourceCanvas.width=canvas.width;sourceCanvas.height=canvas.height;sourceCtx.drawImage(canvas,0,0);media='baked';ready=true;playing=false;inputMedia='none';echo.width=canvas.width;echo.height=canvas.height;ectx.clearRect(0,0,echo.width,echo.height);drawOnce();sync(false)}
 
 function wobble(w,h,t){if(!s.wobble){ctx.drawImage(tmp,0,0);return}for(let y=0;y<h;y+=2){const dx=Math.sin(y/h*s.wobbleFreq*Math.PI*2+t/1000*s.wave)*s.wobble;ctx.drawImage(tmp,0,y,w,2,dx,y,w,2)}}
 function ripple(w,h,t){fctx.clearRect(0,0,w,h);fctx.drawImage(canvas,0,0);for(let y=0;y<h;y+=2){const dx=Math.sin((y+t*.03)/h*s.rippleFreq*Math.PI*2)*s.ripples*.45;ctx.drawImage(fx,0,y,w,2,dx,y,w,2)}}
@@ -160,7 +182,7 @@ $('stillBtn').onclick=()=>{playing=false;if(media==='video')video.pause();render
 $('fullBtn').onclick=()=>document.fullscreenElement?document.exitFullscreen():$('app').requestFullscreen();$('reflowBtn').onclick=()=>window.dispatchEvent(new Event('resize'));
 $('undoBtn').onclick=()=>restoreSnapshot(undoStack.pop());$('resetBtn').onclick=()=>{pushUndo();stopAllSweeps();initState(false);sync(true);renderStaticIfNeeded()};
 $('randomBtn').onclick=()=>rand(.35);$('chaosBtn').onclick=()=>rand(1);$('disableAllBtn').onclick=()=>{pushUndo();for(const name in groupEnabled)groupEnabled[name]=false;sync(false);renderStaticIfNeeded()};$('enableAllBtn').onclick=()=>{pushUndo();for(const name in groupEnabled)groupEnabled[name]=true;sync(false);renderStaticIfNeeded()};
-$('snapBtn').onclick=()=>{if(!ready)return;if(!playing)drawOnce();download(media==='video'?'circuitbend-video-frame.png':'circuitbend-art.png',canvas.toDataURL('image/png'))};
+$('snapBtn').onclick=()=>{if(!ready)return;try{download(media==='video'?'circuitbend-video-frame.png':'circuitbend-art.png',canvas.toDataURL('image/png'))}catch{mediaStatus('PNG export failed. Try a smaller preview size.',true)}};
 function rand(p){pushUndo();const r=mulberry32(hash32(`${fxSeed.value}|${Date.now()}|${p}`));for(const k in ranges){const[min,max]=ranges[k];setParam(k,+(min+r()*(max-min)*p).toFixed(2),true)}for(const k in defaults)if(typeof defaults[k]==='boolean')base[k]=s[k]=r()<.18*p;sync(true);renderStaticIfNeeded()}
 $('savePresetBtn').onclick=()=>{localStorage.setItem('circuitbend.snapshot',JSON.stringify(snapshot()));$('savePresetBtn').textContent='Saved';setTimeout(()=>$('savePresetBtn').textContent='Save snapshot',900)};
 $('loadPresetBtn').onclick=()=>{try{const x=JSON.parse(localStorage.getItem('circuitbend.snapshot')||'null');if(x){pushUndo();restoreSnapshot(x)}}catch(e){console.warn(e)}};

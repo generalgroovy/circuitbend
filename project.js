@@ -7,7 +7,7 @@
   const projectState=()=>({
     format:'circuitbend-project',version:VERSION,savedAt:new Date().toISOString(),
     generator:{prompt:promptEl.value,seed:seedEl.value,mode:genMode.value,engine:genEngine.value,motion:genMotion.value,width:+genW.value,height:+genH.value,cell:+cellSize.value,speed:+genSpeed.value},
-    effects:{base:clone(base),groupEnabled:clone(groupEnabled),rate:clone(rate),lfo:clone(lfo),fxSeed:fxSeed.value},
+    effects:{mix:fxMix,base:clone(base),groupEnabled:clone(groupEnabled),rate:clone(rate),lfo:clone(lfo),fxSeed:fxSeed.value},
     transport:{master:+master.value,macroA:+macroA.value,macroB:+macroB.value,bpm:+bpm.value,quality:+quality.value},
     advanced:window.circuitbendAdvanced?.exportState?.()||null,
     webview:window.circuitbendWebview?.exportState?.()||null,
@@ -27,11 +27,33 @@
     document.querySelectorAll('[data-mode]').forEach(el=>el.value=lfo[el.dataset.mode]?.mode||'off');
     document.querySelectorAll('[data-amt]').forEach(el=>el.value=lfo[el.dataset.amt]?.amt??0);
   }
-  function restoreProject(p){
+  function restoreProject(p,revision=beginSourceChange()){
+    if(revision!==sourceRevision)return;
     if(!p||p.format!=='circuitbend-project')throw new Error('Not a Circuitbend project file');
     if(p.version!=null&&+p.version>VERSION)throw new Error(`Project version ${p.version} is newer than this app supports`);
-    pushUndo();stopAllSweeps();
-    const g=p.generator||{},e=p.effects||{},t=p.transport||{};
+    const baked=p.source?.bakedPng;
+    if(p.source?.kind!=='baked'||!baked){applyProject(p);return}
+    if(typeof baked!=='string'||!baked.startsWith('data:image/png;base64,'))throw new Error('Baked source must be an embedded PNG');
+    const restoreImg=new Image();let timeout;
+    const cleanup=()=>{clearTimeout(timeout);restoreImg.onload=restoreImg.onerror=null;restoreImg.removeAttribute('src');pendingRestoreCleanup=null};
+    pendingRestoreCleanup=cleanup;
+    const failed=()=>{if(revision!==sourceRevision)return;cleanup();mediaStatus('The baked image could not be restored. Your current source and settings are unchanged.',true)};
+    restoreImg.onload=()=>{
+      if(revision!==sourceRevision)return;
+      if(!restoreImg.naturalWidth||!restoreImg.naturalHeight||restoreImg.naturalWidth*restoreImg.naturalHeight>32e6||Math.max(restoreImg.naturalWidth,restoreImg.naturalHeight)>16384){failed();return}
+      clearTimeout(timeout);restoreImg.onload=restoreImg.onerror=null;pendingRestoreCleanup=null;applyProject(p,restoreImg);
+    };
+    restoreImg.onerror=failed;timeout=setTimeout(failed,30000);restoreImg.src=baked;
+  }
+  async function loadProjectFile(event){
+    const f=event.target.files?.[0];event.target.value='';if(!f)return;
+    const revision=beginSourceChange();
+    try{const text=await f.text();if(revision!==sourceRevision)return;restoreProject(JSON.parse(text),revision)}
+    catch(error){if(revision===sourceRevision)mediaStatus(`Could not load project: ${error.message}. Your current source is unchanged.`,true)}
+  }
+  function applyProject(p,restoreImg=null){
+    video.pause();pushUndo();stopAllSweeps();
+    const g=p.generator||{},e=p.effects||{},t=p.transport||{};setFxMix(e.mix);
     if(g.prompt!=null)promptEl.value=String(g.prompt);if(g.seed!=null)seedEl.value=String(g.seed);
     setSelect(genMode,g.mode);setSelect(genEngine,g.engine);setSelect(genMotion,g.motion);
     if(Number.isFinite(+g.width))genW.value=clamp(+g.width,64,4096);if(Number.isFinite(+g.height))genH.value=clamp(+g.height,64,4096);
@@ -48,13 +70,12 @@
     window.circuitbendWorkspace?.importState?.(p.workspace);
     window.circuitbendViewer?.importState?.(p.viewer);
     syncModulationControls();
-    const baked=p.source?.bakedPng;
-    if(p.source?.kind==='baked'&&baked){
-      const restoreImg=new Image();restoreImg.onload=()=>{sourceCanvas.width=restoreImg.naturalWidth;sourceCanvas.height=restoreImg.naturalHeight;sourceCtx.drawImage(restoreImg,0,0);media='baked';inputMedia='none';ready=true;playing=false;placeholder.style.display='none';resize();drawOnce();loopStart();sync(true);syncModulationControls()};restoreImg.onerror=()=>alert('The baked image in this project could not be restored.');restoreImg.src=baked;
-    }else{media='generated';ready=true;playing=genMotion.value!=='static';placeholder.style.display='none';generateSource(0);resize();drawOnce();loopStart();sync(true);syncModulationControls()}
+    if(restoreImg){sourceCanvas.width=restoreImg.naturalWidth;sourceCanvas.height=restoreImg.naturalHeight;sourceCtx.drawImage(restoreImg,0,0);media='baked';inputMedia='none';playing=false;restoreImg.removeAttribute('src')}
+    else{media='generated';playing=genMotion.value!=='static';generateSource(0)}
+    ready=true;placeholder.style.display='none';resize();drawOnce();loopStart();sync(true);syncModulationControls();mediaStatus();
   }
   saveBtn.addEventListener('click',saveProject);
-  fileInput.addEventListener('change',async e=>{const f=e.target.files?.[0];if(!f)return;try{restoreProject(JSON.parse(await f.text()))}catch(err){console.error(err);alert(`Could not load project: ${err.message}`)}finally{e.target.value=''}});
+  fileInput.addEventListener('change',loadProjectFile);
   function loadViewer(){if(document.querySelector('script[data-circuitbend-viewer]'))return;const v=document.createElement('script');v.src='preview-window.js';v.dataset.circuitbendViewer='1';v.async=false;document.body.appendChild(v)}
   function loadStreamlined(){
     const existing=document.querySelector('script[data-circuitbend-streamlined]');

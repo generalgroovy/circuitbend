@@ -60,7 +60,7 @@ test('Space activates focused controls normally and still toggles background pla
 test('original comparison bypasses effects without changing stored settings or render scale',()=>{
   const main=readFileSync(new URL('../main.js',import.meta.url),'utf8');
   const context=vm.createContext({previewOriginal:true,defaults:{scale:0.72,rgb:0,noise:0},keyGroup:{scale:'Render',rgb:'Channel / glitch',noise:'Channel / glitch'},groupEnabled:{Render:true,'Channel / glitch':true},live:{scale:.5,rgb:30,noise:50}});
-  vm.runInContext(main.slice(main.indexOf('function effectiveState('),main.indexOf('\n\nlet mediaObjectUrl')),context);
+  vm.runInContext(main.slice(main.indexOf('function effectiveState('),main.indexOf('let mediaObjectUrl')),context);
   assert.equal(vm.runInContext('effectiveState(live).rgb',context),0);
   assert.equal(vm.runInContext('effectiveState(live).scale',context),.5);
   assert.equal(context.live.rgb,30);
@@ -68,4 +68,18 @@ test('original comparison bypasses effects without changing stored settings or r
   assert.equal(vm.runInContext('effectiveState(live).rgb',context),30);
   context.groupEnabled['Channel / glitch']=false;
   assert.equal(vm.runInContext('effectiveState(live).rgb',context),0);
+});
+
+
+test('FX mix gesture has one undo, preserves precise endpoints, and old snapshots default to full mix',()=>{
+  const main=readFileSync(new URL('../main.js',import.meta.url),'utf8');
+  const mix={value:'100',events:{},addEventListener(type,fn){this.events[type]=fn}};
+  const context=vm.createContext({mix,fxMix:1,undoStack:[],snapshot(){return {fxMix:context.fxMix}},clamp:(v,min,max)=>Math.max(min,Math.min(max,v)),window:{},renderStaticIfNeeded(){}});
+  vm.runInContext(main.slice(main.indexOf('function setFxMix('),main.indexOf('function initState(')),context);
+  vm.runInContext(extract('    let mixStart=', '    mixLabel.append('),context);
+  mix.events.pointerdown();mix.value='20';mix.events.input();mix.value='35';mix.events.input();mix.events.change();mix.events.blur();
+  assert.equal(context.fxMix,.35);assert.equal(context.undoStack.length,1);assert.equal(context.undoStack[0].fxMix,1);
+  mix.events.keydown({key:'Home'});mix.value='0';mix.events.input();mix.events.change();assert.equal(context.fxMix,0);assert.equal(context.undoStack.length,2);
+  vm.runInContext('setFxMix(undefined)',context);assert.equal(context.fxMix,1);
+  vm.runInContext('setFxMix(NaN)',context);assert.equal(context.fxMix,1);
 });

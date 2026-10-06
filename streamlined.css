@@ -7,3 +7,17 @@
 /* Docked viewer tools must be positioned against the preview, even without pinning. */
 .streamFull .preview:not(.viewerFloating){position:relative!important}
 @media(max-width:820px){.streamFocus.previewPinned .preview:not(.viewerFloating){position:relative}}
+
+/* One continuous look control, with immediate recovery beside the preview. */
+.previewWorkflow .fxMixControl{display:flex;align-items:center;gap:8px;font-size:13px;flex:1 1 220px;white-space:nowrap;min-height:40px}
+.fxMixControl input{flex:1;min-width:60px;width:100px;min-height:40px;margin:0}
+.fxMixControl output{min-width:4ch;text-align:right;font-variant-numeric:tabular-nums}
+.previewWorkflow #undoBtn{min-width:64px}
+.mediaFeedback{display:flex;align-items:center;gap:8px;padding:0 8px;font-size:13px;line-height:1.5;color:#b2c7dc}
+.mediaFeedback:has([hidden]):not(:has(:not([hidden]))){display:none}
+.mediaFeedback [hidden]{display:none!important}
+#mediaStatus[data-error=true]{color:#ffcab8}
+.mediaFeedback button{min-height:44px;flex-shrink:0}
+@media(max-width:520px){.previewWorkflow .fxMixControl{flex-basis:100%}.previewWorkflow button{min-height:44px!important}.mediaFeedback{align-items:flex-start;flex-wrap:wrap}}
+
+@media(max-width:820px){.streamFocus .top .actions button,.streamFocus .top .filebtn{font-size:12px;min-height:44px;display:inline-flex;align-items:center;padding:8px}.previewWorkflow .fxMixControl,.fxMixControl input{min-height:44px}}

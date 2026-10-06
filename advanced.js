@@ -117,8 +117,30 @@
   controlsAdv.sizePreset?.addEventListener('change',applySizePreset);controlsAdv.aspectLock?.addEventListener('change',()=>{aspectRatio=(+genW.value||512)/(+genH.value||512)});[genW,genH].forEach(el=>el.addEventListener('change',()=>{maintainAspect(el);clampDimensions();controlsAdv.sizePreset.value='custom';if(media==='generated')startGenerated();updateResolutionReadout()}));controlsAdv.renderBudget?.addEventListener('change',()=>{resize();renderStaticIfNeeded()});
   controlsAdv.previewZoom?.addEventListener('input',()=>{canvas.style.width=`${controlsAdv.previewZoom.value}%`;canvas.style.height='auto'});controlsAdv.pixelPreview?.addEventListener('change',()=>canvas.closest('.preview')?.classList.toggle('pixelPreview',controlsAdv.pixelPreview.checked));
 
+  let exporting=false;
   async function exportFullResolution(){
-    if(!ready)return;const [sw,sh]=size();if(!sw||!sh)return;const pixels=sw*sh;if(pixels>17e6){alert('Full-resolution export is limited to about 17 megapixels to avoid exhausting browser memory.');return}const wasPlaying=playing,oldScale=base.scale,oldSScale=s.scale,oldQ=quality.value,oldBudget=controlsAdv.renderBudget.value;playing=false;base.scale=s.scale=1;quality.value='1';controlsAdv.renderBudget.value=String(Math.max(2,Math.ceil(pixels/1e6)));drawOnce();await new Promise(resolve=>canvas.toBlob(blob=>{if(blob){const url=URL.createObjectURL(blob);download(`circuitbend-${canvas.width}x${canvas.height}.png`,url);setTimeout(()=>URL.revokeObjectURL(url),30000)}resolve()},'image/png'));base.scale=s.scale=oldScale;quality.value=oldQ;controlsAdv.renderBudget.value=oldBudget;resize();playing=wasPlaying;if(!playing)drawOnce();sync(true)
+    if(!ready||exporting)return;
+    const [sw,sh]=size(),pixels=sw*sh;if(!sw||!sh)return;
+    if(pixels>17e6){mediaStatus('Full-res PNG supports up to 17 megapixels. Use PNG for the current preview size.',true);return}
+    exporting=true;controlsAdv.exportFullBtn.disabled=true;
+    const liveS=s,oldQ=quality.value,oldBudget=controlsAdv.renderBudget.value,oldFrame=frame;
+    const buffers=[];let encoded,filename;
+    try{
+      // Restore synchronously: an encode callback must never overwrite later edits.
+      try{
+        for(const buffer of [canvas,tmp,fx,echo]){const copy=document.createElement('canvas');copy.width=buffer.width;copy.height=buffer.height;copy.getContext('2d').drawImage(buffer,0,0);buffers.push([buffer,copy])}
+        s={...s,scale:1};quality.value='1';controlsAdv.renderBudget.value=String(Math.max(2,Math.ceil(pixels/1e6)));
+        draw(performance.now(),false);filename=`circuitbend-${canvas.width}x${canvas.height}.png`;
+        encoded=new Promise((resolve,reject)=>canvas.toBlob(blob=>blob?resolve(blob):reject(new Error('The browser could not encode this image.')),'image/png'));
+      }finally{
+        s=liveS;quality.value=oldQ;controlsAdv.renderBudget.value=oldBudget;frame=oldFrame;
+        for(const [buffer,copy] of buffers){buffer.width=copy.width;buffer.height=copy.height;buffer.getContext('2d').drawImage(copy,0,0);copy.width=copy.height=1}
+        sync(true);
+      }
+      const blob=await encoded,url=URL.createObjectURL(blob);
+      try{download(filename,url)}finally{setTimeout(()=>URL.revokeObjectURL(url),30000)}
+    }catch(error){mediaStatus('Export failed. Try PNG or reduce the source size. Your settings are unchanged.',true);console.warn('Full-resolution export failed:',error)}
+    finally{exporting=false;controlsAdv.exportFullBtn.disabled=false}
   }
   controlsAdv.exportFullBtn?.addEventListener('click',exportFullResolution);
 

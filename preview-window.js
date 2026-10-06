@@ -3,8 +3,6 @@
   const preview=document.querySelector('.preview');
   const output=byId('canvas');
   const sourceCanvas=byId('sourceCanvas');
-  const video=byId('video');
-  const image=byId('image');
   if(!preview||!output||!sourceCanvas)return;
 
   const STORAGE='circuitbend.viewer.v1';
@@ -19,6 +17,7 @@
   function addStyle(){if(document.querySelector('link[data-circuitbend-viewer]'))return;const l=document.createElement('link');l.rel='stylesheet';l.href='preview-window.css';l.dataset.circuitbendViewer='1';document.head.appendChild(l)}
 
   function sourceInfo(kind=state.source){
+    const video=byId('video'),image=byId('image');
     if(kind==='output'&&output.width&&output.height)return{element:output,w:output.width,h:output.height,label:'Processed output'};
     if(kind==='source'&&sourceCanvas.width&&sourceCanvas.height)return{element:sourceCanvas,w:sourceCanvas.width,h:sourceCanvas.height,label:'Source canvas'};
     if(kind==='media'){

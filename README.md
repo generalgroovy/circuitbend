@@ -6,8 +6,8 @@
 
 1. In **Create**, choose an engine, render mode and seed, then **Generate**. **Variation** changes the seed. Source presets provide checkerboards, calibration cards, gradients and other reference patterns.
 2. Use **Math** for mathematical generators, **Style** for palettes and glyph rendering, and **FX** for effect racks. Start with a small canvas and a few effects.
-3. The preview comes first. Select an **FX preset** beside it; **Compare original** temporarily bypasses effects while retaining render resolution and all parameter values. **Show processed** restores the effect view. PNG exports the currently visible result. **Adjusted effects** discloses changed settings, including dependent parameters. Pin, float or open the preview in a separate window when useful; preview zoom changes display size, not export resolution.
-4. Open **Export** for output/project controls. **More** contains secondary actions. **Focus** keeps the workspace compact; **Full** exposes the larger set of controls. **Info** holds workflow/shortcut/project notes; the compact workspace keeps controls readable and uses larger phone targets.
+3. The preview comes first. Select an **FX preset** beside it; **FX mix** blends the original with the processed result: 0% is the source and 100% is the full look, preserving transparency. Change it with touch, mouse or arrow keys; **Undo** restores one completed gesture. **Compare original** temporarily shows the source while retaining mix, render resolution and effect values. **Show processed** restores the effect view. PNG exports the currently visible result. **Adjusted effects** discloses changed settings, including dependent parameters. Pin, float or open the preview in a separate window when useful; preview zoom changes display size, not export resolution.
+4. Open **Export** for output/project controls. **Undo** stays beside the preview; **More** contains secondary actions. **Focus** keeps the workspace compact; **Full** exposes the larger set of controls. **Info** holds workflow/shortcut/project notes; the compact workspace keeps controls readable and uses larger phone targets.
 
 The complete workstation remains available: pixel/ASCII/hybrid/ANSI/braille rendering, image/video input, one imported-media overlay, presets, per-rack bypass, modulation and bake-output-to-source. Effects are applied in the implemented processing order; this is not a freely reorderable node graph.
 
@@ -15,8 +15,8 @@ The complete workstation remains available: pixel/ASCII/hybrid/ANSI/braille rend
 
 Source width/height can reach 4096 pixels. Choose final dimensions first, then keep the **Live effect budget** around 1–2 MP while editing large work. Live scale/quality and the budget affect the processed preview; preview zoom only changes presentation.
 
-- **PNG** captures the current processed output resolution.
-- **Full-res PNG** renders at the source dimensions, temporarily using the larger processing size.
+- **PNG** captures the currently visible pixels without another render, including FX mix or original comparison.
+- **Full-res PNG** renders the current source at its dimensions (up to 17 MP). Live buffers and settings restore before asynchronous encoding, so editing can continue safely. The button stays disabled until encoding completes.
 - **ASCII** exports generated character output.
 - **Record WebM** captures the canvas when the browser supports MediaRecorder/canvas capture.
 - **Bake output → source** makes the processed image the new source for another effects pass.
@@ -25,9 +25,9 @@ Reduce live resolution, FPS or expensive temporal/pixel effects if interaction s
 
 ## Imported media and project files
 
-Use **Open media** or drop an image/video. Replacing media releases its previous object URL. Unsupported file types leave the active source intact. Browser-supported formats determine what can be decoded; imported media stays local to the browser.
+Use **Open media** or drop an image/video. The current source remains usable until the new file decodes successfully. **Cancel opening**, decoding failures, unsupported types and superseded requests leave it intact. Replacing media releases the previous object URL; cancelled candidates release theirs. Imports allow images under 64 MB and videos under 512 MB, up to 32 MP and 16,384 pixels per side. Loading times out after 30 seconds with an actionable message. Browser-supported formats determine what can be decoded; imported media stays local to the browser.
 
-**Project JSON** saves the editable configuration in the current `circuitbend-project` format, version **6**: generator settings, effects, modulation, output settings and workspace/viewer state. **Load project** restores compatible project files; newer version numbers are rejected.
+**Project JSON** saves the editable configuration in the current `circuitbend-project` format, version **6**: generator settings, effects, modulation, output settings and workspace/viewer state. **Load project** restores compatible project files; newer version numbers are rejected. Version 6 includes an optional FX mix value; older files restore at 100%. Baked projects decode before applying settings. A newer source choice cancels an older project read or baked-image decode.
 
 Project JSON does **not** embed original imported image/video files. Keep those originals and reload them after restoring an external-media project; the initial restore uses a generated source. A baked source can be included as PNG data. Download a project file when you need portable state—browser-local snapshots and named presets are not a substitute for a backup.
 
@@ -66,7 +66,7 @@ With Node.js 18 or newer:
 npm test
 ```
 
-On Windows, use `npm.cmd test` if PowerShell blocks `npm.ps1`. The suite checks script syntax, DOM references, relative asset paths and the media replacement/rejection lifecycle. It does not prove visual correctness for every effect or export combination.
+On Windows, use `npm.cmd test` if PowerShell blocks `npm.ps1`. The suite checks script syntax, DOM references, relative assets, media replacement/races/cancellation, project decode/read races, export recovery and mix Undo. CI additionally runs Chromium desktop/phone tests for actual PNG dimensions/pixels, original transparency, project round trips and responsive layout. It does not prove visual correctness for every effect, browser or physical device.
 
 A focused browser pass:
 

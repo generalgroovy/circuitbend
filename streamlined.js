@@ -155,13 +155,26 @@
       compare.setAttribute('aria-pressed',String(previewOriginal));
       renderStaticIfNeeded();
     });
-    tools.append(select,compare);
+    const mixLabel=el('label',{class:'fxMixControl',for:'fxMix',text:'FX mix'});
+    const mix=el('input',{id:'fxMix',type:'range',min:'0',max:'100',step:'1',value:String(fxMix*100),'aria-label':'FX mix'});
+    const mixValue=el('output',{id:'fxMixValue',for:'fxMix',text:`${Math.round(fxMix*100)}%`});
+    let mixStart=null;
+    const beginMix=()=>{if(mixStart===null)mixStart=snapshot()};
+    const finishMix=()=>{if(mixStart&&mixStart.fxMix!==fxMix){undoStack.push(mixStart);if(undoStack.length>40)undoStack.shift()}mixStart=null};
+    mix.addEventListener('pointerdown',beginMix);
+    mix.addEventListener('keydown',e=>{if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Home','End','PageUp','PageDown'].includes(e.key))beginMix()});
+    mix.addEventListener('input',()=>{beginMix();setFxMix(Number(mix.value)/100);renderStaticIfNeeded()});
+    mix.addEventListener('change',finishMix);mix.addEventListener('blur',finishMix);mix.addEventListener('pointercancel',finishMix);
+    mixLabel.append(mix,mixValue);
+    tools.append(select,mixLabel,compare);
+    const undo=byId('undoBtn');if(undo)tools.appendChild(undo);
     stage.prepend(tools,preview);
     if(status)preview.after(status);
+    const feedback=byId('mediaStatus')?.parentElement;if(feedback)tools.after(feedback);
     const active=byId('activeEffects');
     if(active){const details=el('details',{class:'previewEffects'});details.append(el('summary',{text:'Adjusted effects'}),active);status?.after(details)}
     const info=el('details',{id:'workspaceInfo',class:'workspaceInfo'});
-    info.innerHTML='<summary>Info</summary><p>Generate a source or open media, choose an FX preset, then adjust its controls. Compare original bypasses effects without changing their settings; PNG exports the visible result.</p><p>Processing order is fixed. Adjusted effects lists changed settings, including parameters that may depend on another effect being enabled.</p><p>Ctrl/Cmd+Enter: generate · Alt+1–5: workflow tabs · Space: playback outside controls. More contains Undo, project save/load, and browser snapshots. Project files do not include original imported media.</p>';
+    info.innerHTML='<summary>Info</summary><p>Generate a source or open media, choose an FX preset, then adjust FX mix: 0% is the source; 100% is the full look. Undo restores the previous mix or parameter state. Compare original temporarily shows the source without changing your mix. PNG exports the visible result.</p><p>Processing order is fixed. Adjusted effects lists changed settings, including parameters that may depend on another effect being enabled. More contains project save/load and browser snapshots. Project files do not include original imported media.</p><p>Ctrl/Cmd+Enter: generate · Alt+1–5: workflow tabs · Space: playback outside controls.</p>';
     byId('streamBar')?.appendChild(info);
   }
 
@@ -187,6 +200,7 @@
     observer.observe(genEngine,{childList:true,subtree:true});observer.observe(genMode,{childList:true,subtree:true});
     applyPreviewPin();applyFocus();updateSummary();
     window.circuitbendWorkspace={
+      syncMix:()=>{const mix=byId('fxMix'),value=byId('fxMixValue');if(mix)mix.value=String(Math.round(fxMix*100));if(value)value.textContent=`${Math.round(fxMix*100)}%`},
       exportState:()=>({...state}),
       importState:x=>{if(!x)return;Object.assign(state,x);applyPreviewPin();applyFocus()},
       setTask,
