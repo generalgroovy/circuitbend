@@ -104,7 +104,12 @@ body.streamFocus .mini,body.streamFocus .sweep,body.streamFull .mini,body.stream
 body.streamFocus .mini>*,body.streamFocus .sweep>*,body.streamFull .mini>*,body.streamFull .sweep>*{min-width:0;font-size:11px;padding:5px}
 body.streamFocus .check,body.streamFull .check{font-size:13px;min-height:36px}
 .mediaFeedback{display:flex;flex-wrap:wrap;gap:8px;padding:0 14px;font-size:13px;line-height:1.5;color:#c1d4e8}
-.mediaFeedback:has([hidden]):not(:has(:not([hidden]))){display:none}
+.mediaFeedback:not(:has(> :not([hidden]))){display:none}
+#projectMediaRecovery{flex-basis:100%;min-width:0;border:1px solid #728269;background:#1d2927;border-radius:10px;padding:12px;margin-bottom:8px}
+#projectMediaRecovery h2{font-size:14px;margin:0 0 6px;color:#e6f2dc}
+#projectMediaRecovery p{margin:0 0 10px}
+.recoveryActions{display:flex;flex-wrap:wrap;gap:8px}
+.recoveryActions button{white-space:normal;max-width:100%}
 [hidden]{display:none!important}
 #mediaStatus[data-error=true]{color:#ffcab8}
 body.streamFocus .preview:not(.viewerFloating) .viewerTools,body.streamFull .preview:not(.viewerFloating) .viewerTools{opacity:1;right:auto;padding:4px;background:#0b1420ee}

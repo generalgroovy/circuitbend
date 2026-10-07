@@ -64,12 +64,39 @@ try{
     assert.equal(await page.locator('#genEngine').inputValue(),savedEngine);
     assert.equal(await page.locator('#quickEngine').inputValue(),savedEngine);
     assert.equal(await page.locator('#configMode').inputValue(),'expert','expert project settings survive restore');
+    const recovery=page.getByRole('region',{name:'Original media needed',exact:true});
+    assert.equal(await recovery.isVisible(),true);
+    assert.equal(await page.locator('#reloadProjectMedia').evaluate(n=>n===document.activeElement),true);
+    assert.equal(await page.evaluate(()=>missingProjectMedia),true);
+    assert.equal(await page.evaluate(()=>inputMedia),'none','a previous import must not silently become the restored original');
+    await page.screenshot({path:`docs/evidence/browser/${viewport.width}-project-recovery.png`,fullPage:false});
+    await page.locator('#moreMenu > summary').click();
+    const [unresolved]=await Promise.all([page.waitForEvent('download'),page.locator('#projectSaveBtn').click()]);
+    assert.equal(JSON.parse(await readFile(await unresolved.path())).source.kind,'external','saving before recovery retains the media requirement');
+    const [badPicker]=await Promise.all([page.waitForEvent('filechooser'),page.getByRole('button',{name:'Reload original media',exact:true}).click()]);
+    await badPicker.setFiles('tests/fixtures/broken.png');
+    await page.waitForFunction(()=>document.getElementById('mediaStatus').textContent.includes('could not be opened'));
+    assert.equal(await recovery.isVisible(),true);
+    assert.equal(await page.locator('#fxMixValue').textContent(),'1%');
+    const [originalPicker]=await Promise.all([page.waitForEvent('filechooser'),page.getByRole('button',{name:'Reload original media',exact:true}).click()]);
+    await originalPicker.setFiles('tests/fixtures/gradient.png');
+    await page.waitForFunction(()=>document.getElementById('readout').textContent.startsWith('image ready'));
+    assert.equal(await recovery.isVisible(),false);
+    assert.equal(await page.locator('#fxMixValue').textContent(),'1%');
+    assert.equal(await page.locator('#quickLook').evaluate(n=>n===document.activeElement),true);
+    assert.match(await page.locator('#mediaStatus').textContent(),/settings kept/);
     // Version 6 files without the optional mix retain the original full-look behavior.
     const legacy=JSON.parse(projectBytes);delete legacy.effects.mix;await page.locator('#projectFile').setInputFiles({name:'legacy.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(legacy))});await page.waitForFunction(()=>document.getElementById('fxMixValue').textContent==='100%');
+    assert.equal(await recovery.isVisible(),true);
+    await page.getByRole('button',{name:'Keep generated source',exact:true}).click();
+    assert.equal(await recovery.isVisible(),false);
+    assert.equal(await page.evaluate(()=>missingProjectMedia),false);
+    assert.equal(await page.evaluate(()=>media),'generated');
+    assert.equal(await page.locator('#quickLook').evaluate(n=>n===document.activeElement),true);
     await page.locator('#playBtn').click();
     const bounds=await page.evaluate(()=>({client:document.documentElement.clientWidth,scroll:document.documentElement.scrollWidth}));assert.ok(bounds.scroll<=bounds.client,'horizontal overflow');
     if(viewport.width<820){const heights=await page.locator('.top .actions button,.top .filebtn').evaluateAll(nodes=>nodes.filter(n=>n.getBoundingClientRect().height).map(n=>n.getBoundingClientRect().height));assert.ok(heights.every(h=>h>=44))}
-    assert.deepEqual(errors,[]);await page.screenshot({path:`docs/evidence/browser/${viewport.width}-workflow.png`,fullPage:false});results.push({viewport,png:[34,25],fullPng:[64,48],initialPreviewVisible:true,expertPanelsFit:true,searchRecovery:true,expertProjectRestored:true,exactPreviewPreserved:true,legacyProjectRestored:true,errors});await context.close();
+    assert.deepEqual(errors,[]);await page.screenshot({path:`docs/evidence/browser/${viewport.width}-workflow.png`,fullPage:false});results.push({viewport,png:[34,25],fullPng:[64,48],initialPreviewVisible:true,expertPanelsFit:true,searchRecovery:true,expertProjectRestored:true,externalMediaRecovery:true,missingMediaResave:true,failedRecoveryPreservesSettings:true,keepGeneratedSource:true,exactPreviewPreserved:true,legacyProjectRestored:true,errors});await context.close();
   }
   await writeFile('docs/evidence/browser/report.json',JSON.stringify({status:'passed',results},null,2)+'\n');console.log(JSON.stringify(results,null,2));
 }finally{await browser?.close();server.kill()}

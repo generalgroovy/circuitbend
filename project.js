@@ -14,7 +14,7 @@
     mathview:window.circuitbendMath?.exportState?.()||null,
     workspace:window.circuitbendWorkspace?.exportState?.()||null,
     viewer:window.circuitbendViewer?.exportState?.()||null,
-    source:{kind:media==='generated'?'generated':media==='baked'?'baked':'external',bakedPng:media==='baked'&&sourceCanvas.width?sourceCanvas.toDataURL('image/png'):null}
+    source:{kind:missingProjectMedia?'external':media==='generated'?'generated':media==='baked'?'baked':'external',bakedPng:media==='baked'&&sourceCanvas.width?sourceCanvas.toDataURL('image/png'):null}
   });
   function saveProject(){
     const json=JSON.stringify(projectState(),null,2),blob=new Blob([json],{type:'application/json'}),url=URL.createObjectURL(blob);
@@ -73,8 +73,10 @@
     window.circuitbendViewer?.importState?.(p.viewer);
     syncModulationControls();
     if(restoreImg){sourceCanvas.width=restoreImg.naturalWidth;sourceCanvas.height=restoreImg.naturalHeight;sourceCtx.drawImage(restoreImg,0,0);media='baked';inputMedia='none';playing=false;restoreImg.removeAttribute('src')}
-    else{media='generated';playing=genMotion.value!=='static';generateSource(0)}
+    else{if(p.source?.kind==='external')inputMedia='none';media='generated';playing=genMotion.value!=='static';generateSource(0)}
     ready=true;placeholder.style.display='none';resize();drawOnce();loopStart();sync(true);syncModulationControls();window.circuitbendWorkspace?.syncSource?.();mediaStatus();
+    setProjectMediaRequirement(p.source?.kind==='external');
+    if(missingProjectMedia){$('reloadProjectMedia').focus({preventScroll:true});$('projectMediaRecovery').scrollIntoView({block:'nearest'})}
   }
   saveBtn.addEventListener('click',saveProject);
   fileInput.addEventListener('change',loadProjectFile);

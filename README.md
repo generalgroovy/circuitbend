@@ -32,7 +32,7 @@ Use **Open media** (mouse, Enter or Space) or drop an image/video. The current s
 
 **Save project** saves the editable configuration in the current `circuitbend-project` format, version **6**: generator settings, effects, modulation, output settings and workspace/viewer state. **Open project** restores compatible project files; newer version numbers are rejected. Project files, browser snapshots and named presets retain FX mix. Version 6 includes an optional FX mix value; older files restore at 100%. Baked projects decode before applying settings. A newer source choice cancels an older project read or baked-image decode.
 
-The project file does **not** embed original imported image/video files. Keep those originals and reload them after restoring an external-media project; the initial restore uses a generated source. A baked source can be included as PNG data. Download a project file when you need portable state—browser-local snapshots and named presets are not a substitute for a backup.
+The project file does **not** embed original imported image/video files. Restoring an external-media project shows **Original media needed** beside the preview and focuses **Reload original media**. The generated preview is a placeholder; choose the original file to recover the artwork with its restored effects and FX mix. Failed or cancelled opening keeps the settings and recovery action available. Saving the project before reloading still records its need for external media. **Keep generated source** accepts the placeholder with the restored settings and cancels any unfinished media opening; Generate or Bake output also starts a deliberate new source. A baked source can be included as PNG data. Download a project file when you need portable state—browser-local snapshots and named presets are not a substitute for a backup.
 
 Workspace/viewer preferences, snapshots and named presets use local storage. These are scoped to the site/browser, can be cleared, and are not account synchronization. There is no automatic durable recording of every edit or complete imported-media session.
 
@@ -69,7 +69,7 @@ With Node.js 18 or newer:
 npm test
 ```
 
-On Windows, use `npm.cmd test` if PowerShell blocks `npm.ps1`. The suite checks script syntax, DOM references, relative assets, media replacement/races/cancellation, project decode/read races, export recovery and mix Undo. CI additionally runs Chromium at 1366, 390 and 320 pixels for first-view preview visibility, expanded expert-rack widths, effect search recovery, keyboard media opening, accessible field names, actual PNG dimensions/pixels, original transparency and expert/legacy project round trips. It does not prove visual correctness for every effect, browser or physical device.
+On Windows, use `npm.cmd test` if PowerShell blocks `npm.ps1`. The suite checks script syntax, DOM references, relative assets, media replacement/races/cancellation, project decode/read races, missing-media recovery and persistence, export recovery and mix Undo. CI additionally runs Chromium at 1366, 390 and 320 pixels for first-view preview visibility, expanded expert-rack widths, effect search recovery, keyboard media opening, accessible field names, actual PNG dimensions/pixels, original transparency and expert/legacy project round trips, including a failed then successful original-media reload. See [the media-recovery flow record](docs/PROJECT-UX-FLOW-2026-10-07.md). These checks do not prove visual correctness for every effect, browser or physical device.
 
 A focused browser pass:
 
