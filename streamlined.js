@@ -21,11 +21,11 @@
   function legacyTab(name){document.querySelector(`[data-webtab="${name}"]`)?.click()}
 
   const tasks={
-    create:{legacy:'source',label:'Create'},
+    create:{legacy:'source',label:'1 · Source'},
     math:{legacy:'art',label:'Math'},
     style:{legacy:'art',label:'Style'},
-    fx:{legacy:'fx',label:'FX'},
-    export:{legacy:'output',label:'Export'}
+    fx:{legacy:'fx',label:'2 · Effects'},
+    export:{legacy:'output',label:'3 · Export'}
   };
 
   function injectStyles(){
@@ -38,7 +38,7 @@
     const anchor=byId('webviewBar')||document.querySelector('.top');
     if(!anchor)return;
     const bar=el('div',{id:'streamBar',class:'streamBar',role:'navigation','aria-label':'Creative workflow'});
-    bar.innerHTML=`<div class="taskTabs">${Object.entries(tasks).map(([k,v])=>`<button data-task="${k}" title="Open ${v.label} tools">${v.label}</button>`).join('')}</div><div class="quickMake"><label>Engine<select id="quickEngine" aria-label="Source engine"></select></label><label>Mode<select id="quickMode" aria-label="Render mode"></select></label><label class="quickSeed">Seed<input id="quickSeed" type="text" aria-label="Seed"></label><label>Cell<input id="quickCell" type="number" min="2" max="32" step="1" aria-label="Cell or glyph size"></label><button id="quickGenerate" class="accent" title="Generate (Ctrl/Cmd+Enter)">Generate</button><button id="quickVariation" title="Create a seed variation">Variation</button></div><div class="streamTools"><span id="streamSummary" aria-live="polite"></span><button id="previewPin" title="Keep the preview visible while scrolling">Pin preview</button><button id="focusToggle" title="Focus hides secondary controls; Full exposes the complete workstation">Focus</button><details id="moreMenu"><summary>More</summary><div id="moreActions" class="moreActions"></div></details></div>`;
+    bar.innerHTML=`<div class="taskTabs">${Object.entries(tasks).map(([k,v])=>`<button data-task="${k}">${v.label}</button>`).join('')}</div><div class="streamTools"><details id="moreMenu"><summary>Project &amp; tools</summary><div id="moreActions" class="moreActions"></div></details></div><div class="quickMake"><label>Source engine<select id="quickEngine" aria-label="Source engine"></select></label><label>Render style<select id="quickMode" aria-label="Render mode"></select></label><button id="quickGenerate" class="accent" title="Generate (Ctrl/Cmd+Enter)">Generate</button><button id="quickVariation" title="Create a seed variation">New variation</button></div>`;
     anchor.after(bar);
   }
 
@@ -63,12 +63,8 @@
   function buildQuickControls(){
     copySelectOptions(genEngine,byId('quickEngine'));
     copySelectOptions(genMode,byId('quickMode'));
-    byId('quickSeed').value=seedEl.value;
-    byId('quickCell').value=cellSize.value;
     wireProxy(byId('quickEngine'),genEngine);
     wireProxy(byId('quickMode'),genMode);
-    wireProxy(byId('quickSeed'),seedEl,'input');
-    wireProxy(byId('quickCell'),cellSize,'input');
     byId('quickGenerate')?.addEventListener('click',()=>click('generateBtn'));
     byId('quickVariation')?.addEventListener('click',()=>click('variationBtn'));
   }
@@ -83,10 +79,11 @@
 
   function moveSecondaryActions(){
     const box=byId('moreActions');if(!box)return;
-    const ids=['fullBtn','undoBtn','resetBtn','randomBtn','chaosBtn','exportFullBtn','projectSaveBtn'];
+    const ids=['fullBtn','undoBtn','resetBtn','randomBtn','chaosBtn','recordBtn','exportFullBtn','projectSaveBtn','asciiBtn','useOutputBtn'];
     for(const id of ids){const n=byId(id);if(n)box.appendChild(n)}
     const projectFile=byId('projectFile')?.closest('label');if(projectFile)box.appendChild(projectFile);
     const browserSave=byId('savePresetBtn'),browserLoad=byId('loadPresetBtn');if(browserSave)box.appendChild(browserSave);if(browserLoad)box.appendChild(browserLoad);
+    box.append(el('button',{id:'previewPin',text:'Pin preview'}),el('button',{id:'focusToggle',text:'Show all tools'}));
     box.addEventListener('click',e=>{if(e.target.closest('button,.filebtn'))closeMoreMenu()});
   }
 
@@ -102,14 +99,12 @@
     state.task=task;
     document.body.dataset.task=task;
     legacyTab(state.focus?tasks[task].legacy:'all');
-    document.querySelectorAll('[data-task]').forEach(b=>{const active=b.dataset.task===task;b.classList.toggle('active',active);b.setAttribute('aria-current',active?'page':'false')});
+    document.querySelectorAll('.taskTabs [data-task]').forEach(b=>{const active=b.dataset.task===task;b.classList.toggle('active',active);b.setAttribute('aria-pressed',String(active))});
     if(state.focus){
       if(task==='create')setDetails([]);
       else if(task==='math')setDetails(['mathLab']);
       else if(task==='style')setDetails(['artLab']);
       else if(task==='export')setDetails([]);
-      if(task==='math')byId('mathLab')?.scrollIntoView({block:'nearest'});
-      if(task==='style')byId('artLab')?.scrollIntoView({block:'nearest'});
     }
     saveLocal();updateSummary();
   }
@@ -117,7 +112,7 @@
   function applyFocus(){
     document.body.classList.toggle('streamFocus',!!state.focus);
     document.body.classList.toggle('streamFull',!state.focus);
-    const b=byId('focusToggle');if(b){b.textContent=state.focus?'Focus':'Full';b.classList.toggle('active',state.focus);b.setAttribute('aria-pressed',String(state.focus))}
+    const b=byId('focusToggle');if(b){b.textContent=state.focus?'Show all tools':'Use focused workspace';b.setAttribute('aria-pressed',String(!state.focus))}
     setTask(state.task);
     saveLocal();
   }
@@ -144,7 +139,7 @@
     if(!stage||!preview)return;
     const tools=el('div',{class:'previewWorkflow'});
     const select=el('select',{id:'quickLook','aria-label':'FX preset'});
-    select.appendChild(el('option',{value:'',text:'FX preset…'}));
+    select.appendChild(el('option',{value:'',text:'Choose a look…'}));
     document.querySelectorAll('[data-preset]').forEach(button=>select.appendChild(el('option',{value:button.dataset.preset,text:button.textContent})));
     select.addEventListener('change',()=>{if(!select.value)return;applyPreset(select.value);updateSummary()});
     const compare=el('button',{id:'compareOriginal',text:'Compare original','aria-pressed':'false'});
@@ -174,8 +169,23 @@
     const active=byId('activeEffects');
     if(active){const details=el('details',{class:'previewEffects'});details.append(el('summary',{text:'Adjusted effects'}),active);status?.after(details)}
     const info=el('details',{id:'workspaceInfo',class:'workspaceInfo'});
-    info.innerHTML='<summary>Info</summary><p>Generate a source or open media, choose an FX preset, then adjust FX mix: 0% is the source; 100% is the full look. Undo restores the previous mix or parameter state. Compare original temporarily shows the source without changing your mix. PNG exports the visible result.</p><p>Processing order is fixed. Adjusted effects lists changed settings, including parameters that may depend on another effect being enabled. More contains project save/load and browser snapshots. Project files do not include original imported media.</p><p>Ctrl/Cmd+Enter: generate · Alt+1–5: workflow tabs · Space: playback outside controls.</p>';
+    info.innerHTML='<summary>How it works</summary><p>Generate a source or open your media. Choose a look, then blend it with FX mix. Save image captures the visible result as PNG. Undo restores the previous mix or parameter change.</p><p>Source options holds seed, size and motion. Math and Style go deeper into patterns, palettes and glyphs. Effects opens individual racks; Expert adds rate, LFO and sweep controls. Processing order is fixed.</p><p>Save project keeps editable settings, including workspace preferences. It does not include original imported media: keep those files too. Snapshots and saved looks stay in this browser.</p><p>Ctrl/Cmd+Enter: generate · Alt+1–5: workflow tabs · Space: playback outside controls.</p>';
     byId('streamBar')?.appendChild(info);
+  }
+
+  function buildExportTools(){
+    const card=el('section',{id:'exportTools',class:'exportTools','aria-label':'Export options'});
+    card.innerHTML='<h2>Keep what you made</h2><div class="exportChoices"><div><button class="accent" data-export="snapBtn">Save image · PNG</button><p>The pixels currently in the preview.</p></div><div><button data-export="exportFullBtn">Save full-size PNG</button><p>Render at the original source dimensions.</p></div><div><button data-export="projectSaveBtn">Save editable project</button><p>Settings in JSON. Keep imported media separately.</p></div><div><button data-export="asciiBtn">Save ASCII text</button><p>Characters from your generated source.</p></div></div>';
+    card.querySelectorAll('[data-export]').forEach(button=>button.addEventListener('click',()=>click(button.dataset.export)));
+    document.querySelector('.generator')?.prepend(card);
+  }
+
+  function makeImportsKeyboardAccessible(){
+    for(const id of ['file','projectFile']){
+      const input=byId(id),label=input?.closest('label');if(!label)continue;
+      label.tabIndex=0;label.setAttribute('role','button');
+      label.addEventListener('keydown',event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();input.click()}});
+    }
   }
 
   function bindKeyboard(){
@@ -191,16 +201,16 @@
   }
 
   function bind(){
-    loadLocal();injectStyles();buildTaskbar();buildQuickControls();moveSecondaryActions();simplifyLabels();buildPreviewWorkflow();bindKeyboard();
-    document.querySelectorAll('[data-task]').forEach(b=>b.addEventListener('click',()=>setTask(b.dataset.task)));
+    loadLocal();injectStyles();buildTaskbar();buildQuickControls();moveSecondaryActions();simplifyLabels();buildPreviewWorkflow();buildExportTools();makeImportsKeyboardAccessible();bindKeyboard();
+    document.querySelectorAll('.taskTabs [data-task]').forEach(b=>b.addEventListener('click',()=>setTask(b.dataset.task)));
     byId('focusToggle')?.addEventListener('click',()=>{state.focus=!state.focus;applyFocus()});
     byId('previewPin')?.addEventListener('click',()=>{state.previewPinned=!state.previewPinned;applyPreviewPin()});
-    [genEngine,genMode,genW,genH,seedEl,cellSize].forEach(n=>{n?.addEventListener('input',updateSummary);n?.addEventListener('change',()=>{copySelectOptions(genEngine,byId('quickEngine'));copySelectOptions(genMode,byId('quickMode'));byId('quickSeed').value=seedEl.value;byId('quickCell').value=cellSize.value;updateSummary()})});
+    [genEngine,genMode,genW,genH,seedEl,cellSize].forEach(n=>{n?.addEventListener('input',updateSummary);n?.addEventListener('change',()=>{copySelectOptions(genEngine,byId('quickEngine'));copySelectOptions(genMode,byId('quickMode'));updateSummary()})});
     const observer=new MutationObserver(()=>{copySelectOptions(genEngine,byId('quickEngine'));copySelectOptions(genMode,byId('quickMode'));updateSummary()});
     observer.observe(genEngine,{childList:true,subtree:true});observer.observe(genMode,{childList:true,subtree:true});
     applyPreviewPin();applyFocus();updateSummary();
     window.circuitbendWorkspace={
-      syncSource:()=>{copySelectOptions(genEngine,byId('quickEngine'));copySelectOptions(genMode,byId('quickMode'));byId('quickSeed').value=seedEl.value;byId('quickCell').value=cellSize.value;updateSummary()},
+      syncSource:()=>{copySelectOptions(genEngine,byId('quickEngine'));copySelectOptions(genMode,byId('quickMode'));updateSummary()},
       syncMix:()=>{const mix=byId('fxMix'),value=byId('fxMixValue');if(mix)mix.value=String(Math.round(fxMix*100));if(value)value.textContent=`${Math.round(fxMix*100)}%`},
       exportState:()=>({...state}),
       importState:x=>{if(!x)return;Object.assign(state,x);applyPreviewPin();applyFocus()},

@@ -1,23 +1,117 @@
-.streamBar{display:grid;grid-template-columns:auto minmax(460px,1fr) auto;align-items:center;gap:8px;padding:6px 10px;border-bottom:1px solid #243247;background:#080d15;position:sticky;top:0;z-index:60;box-shadow:0 5px 18px #0006}.taskTabs{display:flex;gap:3px}.taskTabs button,.streamTools button,.streamTools summary{font-size:10px;padding:5px 8px;white-space:nowrap}.taskTabs button.active,.streamTools button.active{border-color:#67d8ff;background:#102231;color:#c5f2ff}.quickMake{display:grid;grid-template-columns:minmax(135px,1.5fr) minmax(90px,.8fr) minmax(110px,1fr) 62px auto auto;gap:5px;align-items:end}.quickMake label{display:grid;gap:2px;font-size:8px;text-transform:uppercase;letter-spacing:.05em;color:#72869d}.quickMake input,.quickMake select{width:100%;min-width:0;height:27px;box-sizing:border-box;font-size:10px;padding:3px 5px}.quickMake button{height:27px;padding:4px 8px;font-size:10px}.streamTools{display:flex;align-items:center;justify-content:flex-end;gap:4px;min-width:0}.streamTools #streamSummary{font:9px ui-monospace,monospace;color:#7fa4bd;max-width:210px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.streamTools details{position:relative}.streamTools details>summary{cursor:pointer;list-style:none;border:1px solid #2b3545;border-radius:6px;background:#101620;color:#b7c5d7}.streamTools details>summary::-webkit-details-marker{display:none}.moreActions{position:absolute;right:0;top:calc(100% + 6px);width:230px;display:grid;grid-template-columns:1fr 1fr;gap:5px;padding:8px;border:1px solid #314259;border-radius:8px;background:#0b111b;box-shadow:0 14px 36px #000b;z-index:100}.moreActions button,.moreActions .filebtn{font-size:10px;padding:5px 6px;min-width:0}.streamFocus #webviewBar{display:none!important}.streamFocus .top{position:relative;padding:6px 10px;min-height:34px}.streamFocus .brand h1{font-size:15px;margin:0}.streamFocus .brand .sub{display:none}.streamFocus .top .actions{gap:4px;align-items:center}.streamFocus .top .actions button,.streamFocus .top .filebtn{font-size:9px;padding:4px 6px}.streamFocus .main{height:calc(100vh - 86px);min-height:0;gap:7px;padding:7px}.streamFocus .stage,.streamFocus .panel{scrollbar-width:thin}.streamFocus .generator{padding:7px}.streamFocus .sectionTitle{margin-bottom:5px}.streamFocus .sectionTitle span{font-size:9px}.streamFocus textarea#prompt{min-height:42px;max-height:64px;padding:6px}.streamFocus .sourcePresetRow{gap:4px}.streamFocus .sourcePresetRow .hint{display:none}.streamFocus .genGrid{grid-template-columns:repeat(4,minmax(85px,1fr));gap:4px}.streamFocus .genGrid label{font-size:9px;gap:3px}.streamFocus .genGrid input,.streamFocus .genGrid select{padding:4px;font-size:10px}.streamFocus .genActions{gap:4px;margin-top:5px}.streamFocus .genActions button{font-size:9px;padding:5px 7px}.streamFocus .promptTips{display:none}.streamFocus .drop{padding:5px;min-height:0;font-size:10px}.streamFocus .drop .hint{display:none}.streamFocus .preview{min-height:240px;max-height:calc(100vh - 315px);background:#03050a}.streamFocus.previewPinned .preview{position:sticky;top:48px;z-index:5}.streamFocus .preview #canvas{max-height:calc(100vh - 325px)!important;max-width:100%;width:auto!important}.streamFocus .status{padding:4px 0;font-size:9px}.streamFocus .advancedSection,.streamFocus .artLab,.streamFocus .mathLab{margin-top:5px}.streamFocus .advancedSection>summary,.streamFocus .artLab>summary,.streamFocus .mathLab>summary{padding:6px 8px;font-size:10px}.streamFocus .advancedBody,.streamFocus .artLabGrid,.streamFocus .mathBody{padding-left:8px;padding-right:8px}.streamFocus .artLabGrid{grid-template-columns:repeat(4,minmax(80px,1fr));gap:4px}.streamFocus .mathGrid{grid-template-columns:repeat(4,minmax(75px,1fr));gap:4px}.streamFocus .mathTop{gap:4px}.streamFocus .mathInfo{font-size:9px}.streamFocus .panel{padding-left:2px}.streamFocus .presetGrid{grid-template-columns:repeat(4,1fr);gap:3px}.streamFocus .presetGrid button{font-size:8px;padding:4px 3px}.streamFocus .global{display:grid;grid-template-columns:1fr 1fr;gap:4px}.streamFocus .global label{font-size:8px}.streamFocus .global button{font-size:9px;padding:4px}.streamFocus .configurator{padding:6px;margin:5px 0}.streamFocus .configurator h3{font-size:10px}.streamFocus .configRow{gap:4px;margin-top:5px}.streamFocus .configRow>*{font-size:9px;min-width:0}.streamFocus .layerTools{padding:5px;gap:4px}.streamFocus .rackHint{display:none}.streamFocus .group{margin-bottom:4px}.streamFocus .groupHead{padding:4px 5px}.streamFocus .groupHead h2{font-size:10px}.streamFocus .groupHelp{display:none}.streamFocus .ctrl{padding:3px 5px}.streamFocus .ctrlTop label,.streamFocus .paramHint{font-size:8px}.streamFocus .paramHint{display:none}.streamFocus .mini,.streamFocus .sweep{gap:2px}.streamFocus[data-task="fx"] .preview{max-height:48vh}.streamFocus[data-task="math"] #artLab,.streamFocus[data-task="style"] #mathLab{display:none!important}.streamFocus[data-task="math"] .mathLab,.streamFocus[data-task="style"] .artLab{display:block!important}.streamFocus[data-task="export"] .advancedSection[data-webpanel="output"]{display:block!important}.streamFull .streamBar{position:sticky}.streamFull .quickMake{opacity:.92}.streamFull.previewPinned .preview{position:static}.streamFull #webviewBar{position:static}.streamFull .main{height:auto!important;overflow:visible!important}.streamFull .stage,.streamFull .panel{overflow:visible!important}.streamFull .preview{position:static!important}.streamFull .moreActions{width:260px}@media(max-width:1180px){.streamBar{grid-template-columns:1fr auto}.quickMake{grid-column:1/-1;grid-row:2}.streamTools #streamSummary{display:none}.streamFocus .main{height:calc(100vh - 118px)}}@media(max-width:820px){.streamBar{position:static;display:flex;flex-wrap:wrap}.taskTabs{width:100%}.taskTabs button{flex:1}.quickMake{display:grid;width:100%;grid-template-columns:1fr 1fr 1fr}.quickMake .quickSeed{grid-column:span 2}.streamTools{width:100%;justify-content:flex-end}.streamFocus .main{height:auto;overflow:visible;grid-template-columns:1fr}.streamFocus .stage,.streamFocus .panel{overflow:visible}.streamFocus.previewPinned .preview{position:static}.streamFocus .preview,.streamFocus .preview #canvas{max-height:none!important}.streamFocus .genGrid{grid-template-columns:1fr 1fr}.streamFocus .artLabGrid,.streamFocus .mathGrid{grid-template-columns:1fr 1fr}}@media(max-width:520px){.quickMake{grid-template-columns:1fr 1fr}.quickMake .quickSeed{grid-column:span 1}.streamTools #previewPin{display:none}.moreActions{position:fixed;left:10px;right:10px;top:100px;width:auto}.streamFocus .artLabGrid,.streamFocus .mathGrid{grid-template-columns:1fr 1fr}}
-/* Primary preview, normal-size controls, explanatory text on demand. */
-.previewWorkflow{display:flex;flex-wrap:wrap;gap:8px;padding:8px}.previewWorkflow select{flex:1;min-width:120px}.previewWorkflow button{min-width:140px}.previewWorkflow button[aria-pressed=true]{border-color:#77f4ff;background:#16404a}.previewEffects{margin:0 10px 8px;color:#acc1d6;font-size:12px}.previewEffects summary{cursor:pointer;padding:8px 0}.previewEffects .activeEffects{padding-bottom:8px}.streamFocus .stage{display:flex;flex-direction:column;overflow:auto;min-height:0}.streamFocus .stage>*{flex-shrink:0}.streamFocus .preview{min-height:260px;max-height:52vh}.streamFocus .preview #canvas{max-height:50vh!important}.streamFocus.previewPinned .preview{top:0}.streamFocus .presets{display:none}.streamFocus .generator>.sectionTitle{display:none}.streamFocus .drop{font-size:12px}.streamFocus .quickMake input,.streamFocus .quickMake select,.streamFocus .quickMake button{font-size:12px;min-height:36px}.streamFocus .taskTabs button,.streamFocus .streamTools button,.streamFocus .streamTools summary{font-size:12px;min-height:32px}.streamFocus .quickMake label{font-size:10px}.workspaceInfo{grid-column:1/-1;font-size:12px;color:#adc0d5}.workspaceInfo summary{cursor:pointer;min-height:28px;padding:5px}.workspaceInfo p{max-width:90ch;line-height:1.6}.streamBar{grid-template-columns:auto minmax(400px,1fr) auto}.streamFocus .main{height:calc(100vh - 132px)}.workspaceInfo:not([open]){position:absolute;right:12px;bottom:-31px;z-index:70;background:#0b111b;border:1px solid #314259;border-radius:5px}.workspaceInfo[open]{position:relative;padding:8px}.streamFocus .previewWorkflow button,.streamFocus .previewWorkflow select{font-size:13px;min-height:40px}.streamFocus .panel{min-height:0}.streamFocus .stage .generator{margin-top:4px}.streamFull .stage{display:flex;flex-direction:column}.streamFull .preview{min-height:280px}
-@media(max-width:1180px){.streamBar{grid-template-columns:1fr auto}.streamFocus .main{height:calc(100vh - 170px)}}
-@media(max-width:820px){.streamFocus .main{height:auto}.streamFocus .preview,.streamFocus .preview #canvas{max-height:52vh!important}.streamFocus .quickMake input,.streamFocus .quickMake select,.streamFocus .quickMake button,.streamFocus .taskTabs button{min-height:44px}.streamFocus .stage{min-height:0}.workspaceInfo:not([open]){position:static;margin-right:auto}.workspaceInfo{width:100%}.streamFocus .panel{min-height:0}.streamFocus .main{padding-top:8px}.streamFocus .streamTools{justify-content:space-between}}
-
-/* Docked viewer tools must be positioned against the preview, even without pinning. */
-.streamFull .preview:not(.viewerFloating){position:relative!important}
-@media(max-width:820px){.streamFocus.previewPinned .preview:not(.viewerFloating){position:relative}}
-
-/* One continuous look control, with immediate recovery beside the preview. */
-.previewWorkflow .fxMixControl{display:flex;align-items:center;gap:8px;font-size:13px;flex:1 1 220px;white-space:nowrap;min-height:40px}
-.fxMixControl input{flex:1;min-width:60px;width:100px;min-height:40px;margin:0}
+/* A single readable workspace: preview, focused tools, optional depth. */
+body.streamFocus,body.streamFull{overflow:auto;background:#090d16;color:#eff5ff}
+body.streamFocus .app,body.streamFull .app{display:flex;flex-direction:column;min-height:100vh;height:auto;overflow:visible}
+body.streamFocus .top,body.streamFull .top{padding:14px 20px;gap:16px;flex-wrap:wrap;background:#0d1420;position:relative;z-index:5}
+body.streamFocus .brand,body.streamFull .brand{min-width:0}
+body.streamFocus .brand h1,body.streamFull .brand h1{font-size:20px;letter-spacing:-.04em}
+body.streamFocus .brand .sub,body.streamFull .brand .sub{display:block;font-size:13px;line-height:1.5;margin-top:4px;color:#a6b7cb}
+body.streamFocus .top .actions,body.streamFull .top .actions{max-height:none;overflow:visible;gap:8px;margin:0}
+body.streamFocus button,body.streamFocus .filebtn,body.streamFocus select,body.streamFocus input:not([type=checkbox]):not([type=file]),body.streamFull button,body.streamFull .filebtn,body.streamFull select,body.streamFull input:not([type=checkbox]):not([type=file]){font-size:13px;min-height:40px;padding:8px 10px;border-radius:8px}
+body.streamFocus .filebtn,body.streamFull .filebtn{display:inline-flex;align-items:center}
+body.streamFocus input[type=range],body.streamFull input[type=range]{padding:0;accent-color:#7be1ed}
+body.streamFocus button:focus-visible,body.streamFocus summary:focus-visible,body.streamFocus .filebtn:focus-visible,body.streamFull button:focus-visible,body.streamFull summary:focus-visible,body.streamFull .filebtn:focus-visible{outline:2px solid #9ef1f5;outline-offset:3px}
+body.streamFocus button:disabled,body.streamFull button:disabled{opacity:.5;cursor:default}
+body.streamFocus #webviewBar,body.streamFull #webviewBar{display:none!important}
+.streamBar{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;padding:12px 20px;border-bottom:1px solid #29384b;background:#0c121d;position:relative;z-index:4}
+.taskTabs,.streamTools{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.taskTabs button.active{border-color:#80dce3!important;background:#173943;box-shadow:none;color:#e1ffff}
+.streamTools{justify-content:flex-end}
+.streamTools summary,.workspaceInfo summary{cursor:pointer;padding:10px;border:1px solid #354357;border-radius:8px;min-height:40px}
+.streamTools details{position:relative}
+.moreActions{position:absolute;right:0;top:calc(100% + 8px);width:350px;max-width:calc(100vw - 32px);padding:12px;display:grid;grid-template-columns:1fr 1fr;gap:8px;background:#111c2c;border:1px solid #456075;border-radius:12px;box-shadow:0 12px 40px #000a;z-index:100}
+.moreActions>*{min-width:0;white-space:normal!important}
+.quickMake{grid-column:1/-1;display:grid;grid-template-columns:minmax(130px,1fr) minmax(110px,.8fr) auto auto;gap:10px;align-items:end;max-width:880px}
+.quickMake label,.fieldLabel{display:grid;gap:6px;font-size:12px;color:#b9cadd}
+.quickMake input,.quickMake select{min-width:0;width:100%}
+body.streamFocus:not([data-task=create]) .quickMake{display:none}
+.workspaceInfo{grid-column:1/-1;font-size:13px;color:#c0ccdb;line-height:1.6}
+.workspaceInfo:not([open]){position:absolute;right:20px;bottom:-51px;z-index:4;background:#101a29;border-radius:8px}
+.workspaceInfo[open]{max-width:850px}
+.workspaceInfo p{margin:10px 0}
+body.streamFocus .main,body.streamFull .main{height:auto;min-height:0;overflow:visible;display:grid;grid-template-columns:minmax(0,1fr);align-items:start;gap:16px;padding:16px;max-width:1600px;width:100%;margin:0 auto}
+body.streamFocus[data-task=fx] .main,body.streamFull .main{grid-template-columns:minmax(0,1fr) minmax(360px,.85fr)}
+body.streamFocus .stage,body.streamFocus .panel,body.streamFull .stage,body.streamFull .panel{display:flex;flex-direction:column;min-height:0;min-width:0;overflow:visible;border:1px solid #2b3a4e;border-radius:14px;box-shadow:none;background:#101722}
+body.streamFocus .stage>*,body.streamFull .stage>*{flex-shrink:0;min-width:0}
+.previewWorkflow{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:14px;padding-right:160px}
+.previewWorkflow select{min-width:140px;max-width:100%;flex:1 1 160px}
+.previewWorkflow button[aria-pressed=true]{background:#20434a;border-color:#88e7e5}
+.previewWorkflow .fxMixControl{display:flex;align-items:center;gap:8px;font-size:13px;flex:1 1 210px;white-space:nowrap;min-height:40px}
+.fxMixControl input{flex:1;min-width:50px;width:100px;margin:0}
 .fxMixControl output{min-width:4ch;text-align:right;font-variant-numeric:tabular-nums}
-.previewWorkflow #undoBtn{min-width:64px}
-.mediaFeedback{display:flex;align-items:center;gap:8px;padding:0 8px;font-size:13px;line-height:1.5;color:#b2c7dc}
+body.streamFocus .preview,body.streamFull .preview{position:relative;min-height:220px;height:clamp(240px,38vh,460px);max-height:none;margin:0 14px;background:#05070b;border-color:#304257}
+body.streamFocus .preview #canvas,body.streamFull .preview #canvas{height:auto;max-height:calc(38vh - 12px);max-width:100%;width:auto!important}
+body.streamFocus.previewPinned[data-task=fx] .stage{position:sticky;top:12px}
+body.streamFocus .status,body.streamFull .status{padding:10px 14px;min-width:0;gap:6px}
+body.streamFocus .read,body.streamFull .read{font-size:11px}
+body.streamFocus .pill,body.streamFull .pill{font-size:11px}
+.previewEffects{margin:0 14px 10px;font-size:13px;color:#b0c6db}
+.previewEffects summary{cursor:pointer;min-height:36px;padding:8px 0}
+.activeEffects{flex-wrap:wrap;min-width:0}
+body.streamFocus .effectChip,body.streamFull .effectChip{font-size:11px;overflow-wrap:anywhere}
+body.streamFocus .generator,body.streamFull .generator{padding:14px;background:transparent;border-bottom:0}
+.sourceSettings,.globalSettings{border:1px solid #304257;border-radius:10px;padding:0 12px}
+.sourceSettings>summary,.globalSettings>summary{padding:12px 0;cursor:pointer;font-size:14px;font-weight:650}
+.sourceSettings>summary span{font-size:12px;font-weight:400;color:#a2b5ca;margin-left:8px}
+.sourceSettings[open]{padding-bottom:12px}
+body.streamFocus textarea#prompt,body.streamFull textarea#prompt{font-size:14px;line-height:1.5;min-height:60px;max-height:140px;margin-top:6px}
+.sourcePresetRow{margin:12px 0}
+.sourcePresetRow .fieldLabel{width:100%}
+body.streamFocus .genGrid,body.streamFull .genGrid{grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+body.streamFocus .genGrid label,body.streamFocus .advancedGrid label,body.streamFocus .global label,body.streamFocus .artLabGrid label,body.streamFocus .mathGrid label,body.streamFull .genGrid label,body.streamFull .advancedGrid label,body.streamFull .global label,body.streamFull .artLabGrid label,body.streamFull .mathGrid label{font-size:12px;gap:6px}
+body.streamFocus .advancedSection,body.streamFocus .artLab,body.streamFocus .mathLab,body.streamFull .advancedSection,body.streamFull .artLab,body.streamFull .mathLab{margin-top:12px;background:#0d1420}
+body.streamFocus .advancedSection>summary,body.streamFocus .artLab>summary,body.streamFocus .mathLab>summary,body.streamFull .advancedSection>summary,body.streamFull .artLab>summary,body.streamFull .mathLab>summary{font-size:14px;padding:12px}
+body.streamFocus .advancedGrid,body.streamFocus .artLabGrid,body.streamFocus .mathGrid,body.streamFull .advancedGrid,body.streamFull .artLabGrid,body.streamFull .mathGrid{grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+body.streamFocus .promptTips,body.streamFull .promptTips,body.streamFocus .hint,body.streamFull .hint{font-size:12px;line-height:1.5;color:#b0c0d2}
+body.streamFocus .genActions,body.streamFull .genActions{gap:8px;margin-top:12px}
+body.streamFocus .genActions #generateBtn,body.streamFocus .genActions #variationBtn{display:none}
+body.streamFocus .drop,body.streamFull .drop{padding:12px;margin:0 14px 14px}
+body.streamFocus .drop strong,body.streamFull .drop strong{font-size:13px}
+body.streamFocus .presets{display:none}
+body.streamFocus[data-task=math] #artLab,body.streamFocus[data-task=style] #mathLab{display:none!important}
+.exportTools{display:none}
+body.streamFocus[data-task=export] .exportTools,body.streamFull .exportTools{display:block;margin-bottom:16px}
+.exportTools h2{font-size:17px;margin:0 0 12px}
+.exportChoices{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.exportChoices p{font-size:12px;color:#b0c0d2;margin:6px 0;line-height:1.5}
+.exportChoices button{width:100%;white-space:normal!important}
+body.streamFocus .panel,body.streamFull .panel{padding:12px;gap:12px}
+body.streamFocus .global,body.streamFull .global{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;padding:0 0 12px;border:0}
+body.streamFocus .globalSettings,body.streamFull .globalSettings{order:3}
+body.streamFocus .configurator,body.streamFull .configurator{padding:0;border:0;background:transparent;margin:0}
+body.streamFocus .configurator h3,body.streamFull .configurator h3{font-size:17px;margin-bottom:10px}
+.configRow>*{min-width:0!important;max-width:100%;flex:1 1 140px}
+.configRow input[type=search]{color:#eff5ff;background:#172233;border:1px solid #3c4d63}
+#savedLooks{margin-top:12px;font-size:13px}
+#savedLooks summary{padding:8px 0;cursor:pointer}
+#effectSearchStatus{font-size:13px;color:#c3d3e3;line-height:1.5}
+body.streamFocus .layerTools,body.streamFull .layerTools{flex-wrap:wrap;border:0;border-radius:8px;padding:8px;font-size:13px;gap:8px}
+body.streamFocus .rackHint,body.streamFull .rackHint{white-space:normal;flex-basis:100%;line-height:1.5;font-size:12px}
+body.streamFocus .controls,body.streamFull .controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:10px;overflow:visible;padding:0;min-width:0}
+body.streamFocus .group,body.streamFull .group{min-width:0;margin:0;padding:10px;background:#0b121e}
+body.streamFocus .groupHead,body.streamFull .groupHead{padding:0;gap:8px;margin:0}
+body.streamFocus .groupHead h2,body.streamFull .groupHead h2{font-size:14px;flex:1 1 120px}
+body.streamFocus .groupHead button,body.streamFull .groupHead button{font-size:12px;padding:7px;min-height:36px}
+.rackActions{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+body.streamFocus .groupHelp,body.streamFull .groupHelp{display:block;font-size:12px;line-height:1.5;color:#a6bbcf;margin:10px 0}
+body.streamFocus .group.collapsed>*:not(.groupHead),body.streamFull .group.collapsed>*:not(.groupHead){display:none}
+body.streamFocus .ctrl,body.streamFull .ctrl{padding:8px;margin-top:10px;min-width:0}
+.ctrlTop{grid-column:1/-1;min-width:0}
+body.streamFocus .ctrlTop label,body.streamFull .ctrlTop label{font-size:13px;white-space:normal}
+body.streamFocus .paramNumber,body.streamFull .paramNumber{font-size:13px;min-width:65px;width:76px!important}
+body.streamFocus .ctrl input[type=range],body.streamFull .ctrl input[type=range]{height:36px}
+body.streamFocus .mini,body.streamFocus .sweep,body.streamFull .mini,body.streamFull .sweep{gap:6px;min-width:0}
+body.streamFocus .mini>*,body.streamFocus .sweep>*,body.streamFull .mini>*,body.streamFull .sweep>*{min-width:0;font-size:11px;padding:5px}
+body.streamFocus .check,body.streamFull .check{font-size:13px;min-height:36px}
+.mediaFeedback{display:flex;flex-wrap:wrap;gap:8px;padding:0 14px;font-size:13px;line-height:1.5;color:#c1d4e8}
 .mediaFeedback:has([hidden]):not(:has(:not([hidden]))){display:none}
-.mediaFeedback [hidden]{display:none!important}
+[hidden]{display:none!important}
 #mediaStatus[data-error=true]{color:#ffcab8}
-.mediaFeedback button{min-height:44px;flex-shrink:0}
-@media(max-width:520px){.previewWorkflow .fxMixControl{flex-basis:100%}.previewWorkflow button{min-height:44px!important}.mediaFeedback{align-items:flex-start;flex-wrap:wrap}}
-
-@media(max-width:820px){.streamFocus .top .actions button,.streamFocus .top .filebtn{font-size:12px;min-height:44px;display:inline-flex;align-items:center;padding:8px}.previewWorkflow .fxMixControl,.fxMixControl input{min-height:44px}}
+body.streamFocus .preview:not(.viewerFloating) .viewerTools,body.streamFull .preview:not(.viewerFloating) .viewerTools{opacity:1;right:auto;padding:4px;background:#0b1420ee}
+body.streamFocus .viewerTools button,body.streamFocus .viewerTools select,body.streamFull .viewerTools button,body.streamFull .viewerTools select{font-size:12px;min-height:36px;height:auto}
+#viewerOptions>summary{font-size:12px;cursor:pointer;min-height:32px;padding:8px}
+.viewerOptionsBody{display:flex;flex-wrap:wrap;gap:8px;max-width:460px;padding:6px}
+body.streamFocus .viewerDrag,body.streamFull .viewerDrag{font-size:11px}
+body.streamFocus .viewerZoom,body.streamFull .viewerZoom{font-size:11px}
+@media(max-width:980px){body.streamFocus[data-task=fx] .main,body.streamFull .main{grid-template-columns:minmax(0,1fr)}body.streamFocus.previewPinned[data-task=fx] .stage{position:static}body.streamFocus .genGrid,body.streamFull .genGrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:650px){body.streamFocus .top,body.streamFull .top{padding:12px;display:block}.brand .sub{max-width:30ch}body.streamFocus .top .actions,body.streamFull .top .actions{margin-top:12px}.streamBar{padding:12px;grid-template-columns:minmax(0,1fr);gap:10px}.taskTabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}.taskTabs button{min-width:0;padding:8px!important}.taskTabs button[data-task=create]{order:0}.taskTabs button[data-task=fx]{order:1}.taskTabs button[data-task=export]{order:2}.taskTabs button[data-task=math]{order:3}.taskTabs button[data-task=style]{order:4}.streamTools{justify-content:flex-start}.workspaceInfo:not([open]){position:static;grid-column:1}.workspaceInfo{width:100%}.workspaceInfo summary{display:inline-block}.quickMake{grid-template-columns:minmax(0,1fr) minmax(0,1fr);width:100%}.previewWorkflow{padding:12px;gap:8px}.previewWorkflow select{flex-basis:100%}.previewWorkflow .fxMixControl{flex-basis:100%}.previewWorkflow button{flex:1}.moreActions{left:0;right:auto;width:340px}body.streamFocus .main,body.streamFull .main{padding:8px;gap:12px}body.streamFocus .preview,body.streamFull .preview{margin:0 8px;min-height:210px;height:32vh}body.streamFocus .preview #canvas,body.streamFull .preview #canvas{max-height:calc(32vh - 12px)}body.streamFocus button,body.streamFocus .filebtn,body.streamFocus select,body.streamFocus input:not([type=checkbox]):not([type=file]),body.streamFull button,body.streamFull .filebtn,body.streamFull select,body.streamFull input:not([type=checkbox]):not([type=file]){min-height:44px}body.streamFocus .advancedGrid,body.streamFocus .artLabGrid,body.streamFocus .mathGrid,body.streamFull .advancedGrid,body.streamFull .artLabGrid,body.streamFull .mathGrid{grid-template-columns:repeat(2,minmax(0,1fr))}.sourceSettings>summary span{display:block;margin:5px 0 0}.exportChoices{grid-template-columns:1fr}.inlineCheck{white-space:normal}.advancedBody .sizeRow>*{max-width:100%;min-width:0}.paletteSwatches{flex-wrap:wrap}.viewerOptionsBody{max-width:calc(100vw - 65px)}body.streamFocus .viewerTools select,body.streamFull .viewerTools select{max-width:100%}.webToast{max-width:calc(100vw - 28px)}body.streamFocus .sectionTitle,body.streamFull .sectionTitle{flex-wrap:wrap}}
+@media(prefers-reduced-motion:reduce){.group,.webToast,.viewerTools{transition:none}}
