@@ -10,7 +10,7 @@
 
 For more control, open **Source options** for reference patterns, seed, dimensions and motion. **Math** and **Style** expose mathematical generators, palettes, layers and pixel/glyph rendering. **Effects** starts with folded racks and Simple controls. Search opens matching racks; **Clear search** restores their prior open/closed state. Choose **Expert automation** for rate, LFO and sweep controls. Existing expert projects retain their saved mode.
 
-**Project & tools** holds project save/open, browser snapshots, recording, mutation, bake-output-to-source, fullscreen and **Show all tools**. **View options** on the preview contains source comparison views, zoom, crisp rendering, floating and pop-out controls. **How it works** keeps explanations out of the main creative surface. Controls retain visible keyboard focus and the workspace uses ordinary page scrolling instead of nested scroll traps.
+**Project & tools** holds project save/open, browser snapshots, recording, mutation, bake-output-to-source, fullscreen and **Show all tools**. **View options** on the preview contains source comparison views, zoom, crisp rendering, floating and pop-out controls. **How it works**, inside Project & tools, keeps explanations out of the main creative surface. Controls retain visible keyboard focus and the workspace uses ordinary page scrolling instead of nested scroll traps.
 
 The complete workstation remains available: pixel/ASCII/hybrid/ANSI/braille rendering, image/video input, one imported-media overlay, presets, per-rack bypass, modulation and bake-output-to-source. Effects are applied in the implemented processing order; this is not a freely reorderable node graph.
 

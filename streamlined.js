@@ -175,7 +175,7 @@
     if(active){const details=el('details',{class:'previewEffects'});details.append(el('summary',{text:'Adjusted effects'}),active);status?.after(details)}
     const info=el('details',{id:'workspaceInfo',class:'workspaceInfo'});
     info.innerHTML='<summary>How it works</summary><p>Generate a source or open your media. Choose a look, then blend it with FX mix. Save image captures the visible result as PNG. Undo restores the previous mix or parameter change.</p><p>Source options holds seed, size and motion. Math and Style go deeper into patterns, palettes and glyphs. Effects opens individual racks; Expert adds rate, LFO and sweep controls. Processing order is fixed.</p><p>Save project keeps editable settings, including workspace preferences. It does not include original imported media: keep those files too. Snapshots and saved looks stay in this browser.</p><p>Ctrl/Cmd+Enter: generate · Alt+1–5: workflow tabs · Space: playback outside controls.</p>';
-    byId('streamBar')?.appendChild(info);
+    byId('moreActions')?.appendChild(info);
   }
 
   function buildExportTools(){

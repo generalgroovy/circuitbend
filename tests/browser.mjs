@@ -20,6 +20,7 @@ try{
     assert.equal(await page.locator('#outputSettings').evaluate(n=>n.open),false);
     const initialPreview=await page.locator('.preview').boundingBox();assert.ok(initialPreview.y<viewport.height-60,'first view contains a useful preview');
     await page.screenshot({path:`docs/evidence/browser/${viewport.width}-first-use.png`,fullPage:false});
+    const fittedWidth=(await page.locator('#canvas').boundingBox()).width;await page.locator('#viewerOptions > summary').click();await page.locator('#viewerZoom').press('End');assert.ok((await page.locator('#canvas').boundingBox()).width>fittedWidth*1.5,'viewer zoom changes rendered display size');await page.locator('#viewerFit').click();await page.locator('#viewerOptions > summary').click();
     // All tools remain reachable at narrow widths, including expanded expert controls.
     await page.locator('.taskTabs [data-task="fx"]').click();
     if(viewport.width<=980){assert.equal(await page.locator('.configurator h3').evaluate(n=>n===document.activeElement),true);assert.ok((await page.locator('.configurator h3').boundingBox()).y<viewport.height/2)}
