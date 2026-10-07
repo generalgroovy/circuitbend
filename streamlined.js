@@ -39,6 +39,7 @@
     if(!anchor)return;
     const bar=el('div',{id:'streamBar',class:'streamBar',role:'navigation','aria-label':'Creative workflow'});
     bar.innerHTML=`<div class="taskTabs">${Object.entries(tasks).map(([k,v])=>`<button data-task="${k}">${v.label}</button>`).join('')}</div><div class="streamTools"><details id="moreMenu"><summary>Project &amp; tools</summary><div id="moreActions" class="moreActions"></div></details></div><div class="quickMake"><label>Source engine<select id="quickEngine" aria-label="Source engine"></select></label><label>Render style<select id="quickMode" aria-label="Render mode"></select></label><button id="quickGenerate" class="accent" title="Generate (Ctrl/Cmd+Enter)">Generate</button><button id="quickVariation" title="Create a seed variation">New variation</button></div>`;
+    const menuSummary=bar.querySelector('#moreMenu > summary');menuSummary.setAttribute('aria-label','Project and tools');menuSummary.innerHTML='<span class="menuLabelWide">Project &amp; tools</span><span class="menuLabelNarrow">Tools</span>';
     anchor.after(bar);
   }
 
@@ -110,7 +111,7 @@
     if(fromNavigation&&window.matchMedia('(max-width:980px)').matches){
       const selector={create:'.quickMake',fx:'.configurator h3',export:'#exportTools h2',math:'#mathLab > summary',style:'#artLab > summary'}[task];
       const target=document.querySelector(selector);
-      if(target){target.tabIndex=-1;target.focus({preventScroll:true});target.scrollIntoView({block:'start'})}
+      if(target){if(!target.matches('summary,button,input,select,a[href]'))target.tabIndex=-1;target.focus({preventScroll:true});target.scrollIntoView({block:'start'})}
     }
   }
 
