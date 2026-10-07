@@ -41,7 +41,7 @@ Workspace/viewer preferences, snapshots and named presets use local storage. The
 | Key | Action |
 |---|---|
 | Ctrl/Cmd + Enter | Generate, including while editing the prompt |
-| Alt + 1…5 | Source, Math, Style, Effects, Export |
+| Alt + 1…5 | Source, Effects, Export, Math, Style |
 | Space | Play/pause |
 | G | Generate |
 | R | Mutate effects |

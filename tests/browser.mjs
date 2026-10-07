@@ -14,6 +14,7 @@ try{
     const context=await browser.newContext({viewport,acceptDownloads:true});const page=await context.newPage();const errors=[];page.on('pageerror',e=>errors.push(e.message));
     await page.goto(root);await page.locator('#fxMix').waitFor();await page.locator('#viewerOptions').waitFor();
     await page.waitForFunction(()=>parseFloat(getComputedStyle(document.getElementById('quickGenerate')).minHeight)>=40);
+    assert.ok((await page.locator('.top .actions button,.top .filebtn').evaluateAll(nodes=>nodes.map(n=>parseFloat(getComputedStyle(n).fontSize)))).every(size=>size>=13),'readable header actions');
     assert.equal(await page.locator('#configMode').inputValue(),'simple','new workspaces start without automation rows');
     assert.equal(await page.locator('#sourceSettings').evaluate(n=>n.open),false);
     assert.equal(await page.locator('#outputSettings').evaluate(n=>n.open),false);
@@ -21,10 +22,11 @@ try{
     await page.screenshot({path:`docs/evidence/browser/${viewport.width}-first-use.png`,fullPage:false});
     // All tools remain reachable at narrow widths, including expanded expert controls.
     await page.locator('.taskTabs [data-task="fx"]').click();
+    if(viewport.width<=980){assert.equal(await page.locator('.configurator h3').evaluate(n=>n===document.activeElement),true);assert.ok((await page.locator('.configurator h3').boundingBox()).y<viewport.height/2)}
     await page.locator('#effectSearch').fill('this-effect-does-not-exist');assert.equal(await page.locator('.group:not(.hiddenBySearch)').count(),0);
     assert.match(await page.locator('#effectSearchStatus').textContent(),/No effects match/);
     await page.locator('#clearEffectSearch').click();assert.equal(await page.locator('#effectSearch').evaluate(n=>n===document.activeElement),true);
-    await page.locator('#effectSearch').fill('blur');assert.ok(await page.locator('.group:not(.hiddenBySearch):not(.collapsed)').count()>0,'search opens matching controls');
+    await page.locator('#effectSearch').fill('glow');assert.ok(await page.locator('.group:not(.hiddenBySearch):not(.collapsed)').count()>0,'search opens matching controls');
     await page.locator('#clearEffectSearch').click();assert.equal(await page.locator('.group:not(.collapsed)').count(),0,'clearing search restores prior fold state');
     await page.locator('#configMode').selectOption('expert');await page.locator('#expandRacksBtn').click();
     await page.locator('#globalSettings > summary').click();
@@ -32,7 +34,7 @@ try{
     assert.ok(await page.locator('.mini:visible').count()>0);
     await page.screenshot({path:`docs/evidence/browser/${viewport.width}-expert.png`,fullPage:false});
     await page.locator('#collapseRacksBtn').click();
-    await page.locator('.taskTabs [data-task="export"]').click();assert.equal(await page.locator('#exportTools').isVisible(),true);
+    await page.locator('.taskTabs [data-task="export"]').click();assert.equal(await page.locator('#exportTools').isVisible(),true);if(viewport.width<=980){assert.equal(await page.locator('#exportTools h2').evaluate(n=>n===document.activeElement),true);assert.ok((await page.locator('#exportTools h2').boundingBox()).y<viewport.height/2)}
     await page.locator('#outputSettings > summary').click();
     await page.locator('.taskTabs [data-task="style"]').click();assert.equal(await page.locator('#artLab').evaluate(n=>n.open),true);
     await page.locator('#paletteSettings > summary').click();

@@ -22,10 +22,10 @@
 
   const tasks={
     create:{legacy:'source',label:'1 · Source'},
-    math:{legacy:'art',label:'Math'},
-    style:{legacy:'art',label:'Style'},
     fx:{legacy:'fx',label:'2 · Effects'},
-    export:{legacy:'output',label:'3 · Export'}
+    export:{legacy:'output',label:'3 · Export'},
+    math:{legacy:'art',label:'Math'},
+    style:{legacy:'art',label:'Style'}
   };
 
   function injectStyles(){
@@ -94,7 +94,7 @@
     if(state.task==='math'&&byId('mathLab'))byId('mathLab').open=true;
   }
 
-  function setTask(task){
+  function setTask(task,fromNavigation=false){
     if(!tasks[task])task='create';
     state.task=task;
     document.body.dataset.task=task;
@@ -107,6 +107,11 @@
       else if(task==='export')setDetails([]);
     }
     saveLocal();updateSummary();
+    if(fromNavigation&&window.matchMedia('(max-width:980px)').matches){
+      const selector={create:'.quickMake',fx:'.configurator h3',export:'#exportTools h2',math:'#mathLab > summary',style:'#artLab > summary'}[task];
+      const target=document.querySelector(selector);
+      if(target){target.tabIndex=-1;target.focus({preventScroll:true});target.scrollIntoView({block:'start'})}
+    }
   }
 
   function applyFocus(){
@@ -178,6 +183,10 @@
     card.innerHTML='<h2>Keep what you made</h2><div class="exportChoices"><div><button class="accent" data-export="snapBtn">Save image · PNG</button><p>The pixels currently in the preview.</p></div><div><button data-export="exportFullBtn">Save full-size PNG</button><p>Render at the original source dimensions.</p></div><div><button data-export="projectSaveBtn">Save editable project</button><p>Settings in JSON. Keep imported media separately.</p></div><div><button data-export="asciiBtn">Save ASCII text</button><p>Characters from your generated source.</p></div></div>';
     card.querySelectorAll('[data-export]').forEach(button=>button.addEventListener('click',()=>click(button.dataset.export)));
     document.querySelector('.generator')?.prepend(card);
+    for(const area of [document.querySelector('.generator'),document.querySelector('.panel')]){
+      if(!area)continue;const back=el('button',{class:'backToPreview',text:'↑ Back to preview'});
+      back.addEventListener('click',()=>{byId('quickLook')?.focus({preventScroll:true});document.querySelector('.previewWorkflow')?.scrollIntoView({block:'start'})});area.prepend(back);
+    }
   }
 
   function makeImportsKeyboardAccessible(){
@@ -195,14 +204,14 @@
         return;
       }
       if((e.ctrlKey||e.metaKey)&&e.key==='Enter'){e.preventDefault();click('generateBtn');return}
-      if(e.altKey&&/^[1-5]$/.test(e.key)){e.preventDefault();setTask(Object.keys(tasks)[Number(e.key)-1]);return}
+      if(e.altKey&&/^[1-5]$/.test(e.key)){e.preventDefault();setTask(Object.keys(tasks)[Number(e.key)-1],true);return}
       if(e.key==='Escape'&&closeMoreMenu())e.preventDefault()
     });
   }
 
   function bind(){
     loadLocal();injectStyles();buildTaskbar();buildQuickControls();moveSecondaryActions();simplifyLabels();buildPreviewWorkflow();buildExportTools();makeImportsKeyboardAccessible();bindKeyboard();
-    document.querySelectorAll('.taskTabs [data-task]').forEach(b=>b.addEventListener('click',()=>setTask(b.dataset.task)));
+    document.querySelectorAll('.taskTabs [data-task]').forEach(b=>b.addEventListener('click',()=>setTask(b.dataset.task,true)));
     byId('focusToggle')?.addEventListener('click',()=>{state.focus=!state.focus;applyFocus()});
     byId('previewPin')?.addEventListener('click',()=>{state.previewPinned=!state.previewPinned;applyPreviewPin()});
     [genEngine,genMode,genW,genH,seedEl,cellSize].forEach(n=>{n?.addEventListener('input',updateSummary);n?.addEventListener('change',()=>{copySelectOptions(genEngine,byId('quickEngine'));copySelectOptions(genMode,byId('quickMode'));updateSummary()})});
