@@ -94,3 +94,18 @@ test('named presets retain FX mix and applying one creates a single undo',()=>{
   vm.runInContext('saveUserPreset();fxMix=1;applyUserPreset()',context);
   assert.equal(context.fxMix,.35);assert.equal(saved['Soft look'].fxMix,.35);assert.equal(undos,1);assert.equal(generated,false);
 });
+
+test('missing project media cannot display a previous import in the main or pop-out viewer',()=>{
+  const viewer=readFileSync(new URL('../preview-window.js',import.meta.url),'utf8');
+  const image={currentSrc:'blob:previous',complete:true,naturalWidth:64,naturalHeight:48};
+  const mirror={hidden:false},meta={textContent:'previous image'};let draws=0;
+  const popupCanvas={style:{}};
+  const context=vm.createContext({state:{source:'media'},missingProjectMedia:true,byId:id=>id==='image'?image:null,output:{width:64,height:48},sourceCanvas:{width:64,height:48},
+    ensureMirror:()=>mirror,popup:{closed:false,document:{getElementById:()=>meta}},popupCanvas,popupCtx:{},drawTo(){draws++},updateNoSource(){},requestAnimationFrame(){return 1},frameId:0});
+  vm.runInContext(viewer.slice(viewer.indexOf('  function sourceInfo('),viewer.indexOf('  function ensureMirror(')),context);
+  vm.runInContext(viewer.slice(viewer.indexOf('  function renderMirrors('),viewer.indexOf('  function buildPopup(')),context);
+  assert.equal(vm.runInContext('sourceInfo("media")',context),null);
+  assert.equal(vm.runInContext('sourceInfo("output").label',context),'Processed output');
+  vm.runInContext('renderMirrors()',context);assert.equal(mirror.hidden,true);assert.equal(popupCanvas.style.visibility,'hidden');assert.equal(draws,0);assert.match(meta.textContent,/No imported/);
+  context.missingProjectMedia=false;assert.equal(vm.runInContext('sourceInfo("media").element',context),image);
+});

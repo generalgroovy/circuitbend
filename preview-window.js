@@ -21,6 +21,7 @@
     if(kind==='output'&&output.width&&output.height)return{element:output,w:output.width,h:output.height,label:'Processed output'};
     if(kind==='source'&&sourceCanvas.width&&sourceCanvas.height)return{element:sourceCanvas,w:sourceCanvas.width,h:sourceCanvas.height,label:'Source canvas'};
     if(kind==='media'){
+      if(missingProjectMedia)return null;
       if(video&&video.currentSrc&&video.readyState>=2&&video.videoWidth&&video.videoHeight)return{element:video,w:video.videoWidth,h:video.videoHeight,label:'Imported video'};
       if(image&&image.currentSrc&&image.complete&&image.naturalWidth&&image.naturalHeight)return{element:image,w:image.naturalWidth,h:image.naturalHeight,label:'Imported image'};
       if(image&&image.src&&image.complete&&image.naturalWidth&&image.naturalHeight)return{element:image,w:image.naturalWidth,h:image.naturalHeight,label:'Imported image'};
@@ -106,7 +107,12 @@
       if(info){mirror.hidden=false;drawTo(mirror.getContext('2d'),mirror,info)}else mirror.hidden=true;
     }
     if(popup&&popup.closed){popup=null;popupCanvas=null;popupCtx=null;popupSource=null;popupZoom=null;popupZoomRead=null}
-    if(popupCanvas&&info){drawTo(popupCtx,popupCanvas,info);const meta=popup.document.getElementById('popMeta');if(meta)meta.textContent=`${info.label} · ${info.w}×${info.h}`}
+    if(popupCanvas){
+      const meta=popup.document.getElementById('popMeta');
+      popupCanvas.style.visibility=info?'visible':'hidden';
+      if(info){drawTo(popupCtx,popupCanvas,info);if(meta)meta.textContent=`${info.label} · ${info.w}×${info.h}`}
+      else if(meta)meta.textContent='No imported image/video loaded';
+    }
     updateNoSource();
     frameId=requestAnimationFrame(renderMirrors);
   }

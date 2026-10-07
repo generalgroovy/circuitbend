@@ -86,12 +86,15 @@ try{
     assert.equal(await page.locator('#quickLook').evaluate(n=>n===document.activeElement),true);
     assert.match(await page.locator('#mediaStatus').textContent(),/settings kept/);
     // Version 6 files without the optional mix retain the original full-look behavior.
-    const legacy=JSON.parse(projectBytes);delete legacy.effects.mix;await page.locator('#projectFile').setInputFiles({name:'legacy.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(legacy))});await page.waitForFunction(()=>document.getElementById('fxMixValue').textContent==='100%');
+    const legacy=JSON.parse(projectBytes);delete legacy.effects.mix;legacy.viewer.source='media';await page.locator('#projectFile').setInputFiles({name:'legacy.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(legacy))});await page.waitForFunction(()=>document.getElementById('fxMixValue').textContent==='100%');
     assert.equal(await recovery.isVisible(),true);
+    await page.locator('#viewerNoSource').waitFor({state:'visible'});
+    assert.equal(await page.locator('#viewerMirror').isVisible(),false,'restored imported-media view cannot display the previous project image');
     await page.getByRole('button',{name:'Keep generated source',exact:true}).click();
     assert.equal(await recovery.isVisible(),false);
     assert.equal(await page.evaluate(()=>missingProjectMedia),false);
     assert.equal(await page.evaluate(()=>media),'generated');
+    assert.equal(await page.locator('#canvas').isVisible(),true);
     assert.equal(await page.locator('#quickLook').evaluate(n=>n===document.activeElement),true);
     await page.locator('#playBtn').click();
     const bounds=await page.evaluate(()=>({client:document.documentElement.clientWidth,scroll:document.documentElement.scrollWidth}));assert.ok(bounds.scroll<=bounds.client,'horizontal overflow');

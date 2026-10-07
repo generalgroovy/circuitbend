@@ -125,7 +125,7 @@ function load(f){
 }
 $('cancelMedia').onclick=()=>cancelMediaLoad('Opening cancelled. Your current source is unchanged.');
 $('reloadProjectMedia').onclick=()=>file.click();
-$('keepGeneratedSource').onclick=()=>{if(!missingProjectMedia)return;beginSourceChange();setProjectMediaRequirement(false);mediaStatus('Using the generated source. Your restored project settings are kept.')};
+$('keepGeneratedSource').onclick=()=>{if(!missingProjectMedia)return;beginSourceChange();window.circuitbendViewer?.importState?.({source:'output'});setProjectMediaRequirement(false);mediaStatus('Using the generated source. Your restored project settings are kept.')};
 window.addEventListener('pagehide',()=>beginSourceChange());
 file.onchange=e=>{const selected=e.target.files[0];e.target.value='';if(selected)load(selected)};['dragenter','dragover'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.add('drag')}));['dragleave','drop'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.remove('drag')}));drop.addEventListener('drop',e=>{e.preventDefault();drop.classList.remove('drag');e.dataTransfer.files[0]&&load(e.dataTransfer.files[0])});
 function refSize(){return inputMedia==='video'?[video.videoWidth,video.videoHeight]:inputMedia==='image'?[img.naturalWidth,img.naturalHeight]:[0,0]}
