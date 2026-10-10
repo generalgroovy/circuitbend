@@ -13,7 +13,7 @@
 <header class="top">
   <div class="brand">
     <h1>Circuitbend Sandbox</h1>
-    <div class="sub">Make a source. Bend the light. Keep your favorite.</div>
+    <div class="sub">Procedural images &amp; media effects</div>
   </div>
   <div class="actions">
     <label class="filebtn">Open media<input id="file" type="file" accept="video/*,image/*"></label>
@@ -21,8 +21,8 @@
     <button id="fullBtn">Fullscreen</button>
     <button id="undoBtn" title="Restore the previous parameter state">Undo</button>
     <button id="resetBtn">Reset FX</button>
-    <button id="randomBtn">Mutate</button>
-    <button id="chaosBtn">Chaos</button>
+    <button id="randomBtn">Randomize FX · mild</button>
+    <button id="chaosBtn">Randomize FX · full</button>
     <button id="snapBtn" class="accent">Save image</button>
     <button id="exportFullBtn" title="Render and export at the full source resolution">Full-size PNG</button>
     <button id="recordBtn">Record WebM</button>
@@ -48,7 +48,7 @@
       <div id="placeholder" class="placeholder">Generate a source, apply a reference preset, or load media.</div>
     </div>
     <div class="status">
-      <div class="read" id="readout">Waiting…</div>
+      <div class="read" id="readout">Preparing preview…</div>
       <div class="statusActions">
         <span class="pill" id="seedRead">seed</span>
         <span class="pill" id="fpsRead">0 fps</span>
@@ -57,7 +57,7 @@
     </div>
     <div class="generator card">
       <details id="sourceSettings" class="sourceSettings" data-webpanel="source">
-      <summary>Source options <span>reference patterns, seed, size &amp; motion</span></summary>
+      <summary>Source options</summary>
       <label class="fieldLabel" for="prompt">Pattern words</label>
       <textarea id="prompt" rows="2" spellcheck="false" placeholder="Try neon circuit, concentric rings or your own text"></textarea>
       <div class="sourcePresetRow">
@@ -81,7 +81,7 @@
       </div>
       <div class="genGrid">
         <label>Render mode<select id="genMode"><option value="pixel">Pixel</option><option value="ascii">ASCII</option><option value="hybrid">Hybrid</option></select></label>
-        <label>Source engine<select id="genEngine"><option value="math">Math field</option><option value="cellular">Cellular</option><option value="reference">Imported reference</option><option value="gradient">Gradient / ramp</option><option value="primitives">Geometry / sprites</option><option value="calibration">Calibration / test card</option><option value="waveform">Waveform / scope</option><option value="mandala">Mandala / radial</option><option value="textsheet">Text / glyph sheet</option><option value="noise">Noise / texture</option></select></label>
+        <label>Generator<select id="genEngine"><option value="math">Math field</option><option value="cellular">Cellular</option><option value="reference">Imported reference</option><option value="gradient">Gradient / ramp</option><option value="primitives">Geometry / sprites</option><option value="calibration">Calibration / test card</option><option value="waveform">Waveform / scope</option><option value="mandala">Mandala / radial</option><option value="textsheet">Text / glyph sheet</option><option value="noise">Noise / texture</option></select></label>
         <label>Motion<select id="genMotion"><option value="drift">Drift</option><option value="pulse">Pulse</option><option value="orbit">Orbit</option><option value="wave">Wave</option><option value="static">Static</option></select></label>
         <label>Seed<input id="seed" type="text" value="circuitbend"></label>
         <label>Width<input id="genW" type="number" min="64" max="4096" step="16" value="512"></label>
@@ -153,7 +153,7 @@
   </section>
   <aside class="panel">
     <div class="presets cardless">
-      <div class="sectionTitle"><strong>4. FX scenes</strong><span>starting points; each rack remains configurable</span></div>
+      <div class="sectionTitle"><strong>FX presets</strong><span></span></div>
       <div class="presetGrid">
         <button data-preset="clean">Clean</button><button data-preset="xerox">Xerox</button><button data-preset="neon">Neon</button><button data-preset="acid">Acid</button>
         <button data-preset="cctv">CCTV</button><button data-preset="mosh">Mosh</button><button data-preset="ascii">ASCII</button><button data-preset="thermal">Thermal</button>

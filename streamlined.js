@@ -21,9 +21,9 @@
   function legacyTab(name){document.querySelector(`[data-webtab="${name}"]`)?.click()}
 
   const tasks={
-    create:{legacy:'source',label:'1 · Source'},
-    fx:{legacy:'fx',label:'2 · Effects'},
-    export:{legacy:'output',label:'3 · Export'},
+    create:{legacy:'source',label:'Source'},
+    fx:{legacy:'fx',label:'Effects'},
+    export:{legacy:'output',label:'Export'},
     math:{legacy:'art',label:'Math'},
     style:{legacy:'art',label:'Style'}
   };
@@ -38,7 +38,7 @@
     const anchor=byId('webviewBar')||document.querySelector('.top');
     if(!anchor)return;
     const bar=el('div',{id:'streamBar',class:'streamBar',role:'navigation','aria-label':'Creative workflow'});
-    bar.innerHTML=`<div class="taskTabs">${Object.entries(tasks).map(([k,v])=>`<button data-task="${k}">${v.label}</button>`).join('')}</div><div class="streamTools"><details id="moreMenu"><summary>Project &amp; tools</summary><div id="moreActions" class="moreActions"></div></details></div><div class="quickMake"><label>Source engine<select id="quickEngine" aria-label="Source engine"></select></label><label>Render style<select id="quickMode" aria-label="Render mode"></select></label><button id="quickGenerate" class="accent" title="Generate (Ctrl/Cmd+Enter)">Generate</button><button id="quickVariation" title="Create a seed variation">New variation</button></div>`;
+    bar.innerHTML=`<div class="taskTabs">${Object.entries(tasks).map(([k,v])=>`<button data-task="${k}">${v.label}</button>`).join('')}</div><div class="streamTools"><details id="moreMenu"><summary>Project &amp; tools</summary><div id="moreActions" class="moreActions"></div></details></div><div class="quickMake"><label>Generator<select id="quickEngine" aria-label="Generator"></select></label><label>Render style<select id="quickMode" aria-label="Render mode"></select></label><button id="quickGenerate" class="accent" title="Generate (Ctrl/Cmd+Enter)">Generate</button><button id="quickVariation" title="Create a seed variation">New variation</button></div>`;
     const menuSummary=bar.querySelector('#moreMenu > summary');menuSummary.setAttribute('aria-label','Project and tools');menuSummary.innerHTML='<span class="menuLabelWide">Project &amp; tools</span><span class="menuLabelNarrow">Tools</span>';
     anchor.after(bar);
   }
@@ -145,7 +145,7 @@
     if(!stage||!preview)return;
     const tools=el('div',{class:'previewWorkflow'});
     const select=el('select',{id:'quickLook','aria-label':'FX preset'});
-    select.appendChild(el('option',{value:'',text:'Choose a look…'}));
+    select.appendChild(el('option',{value:'',text:'FX preset…'}));
     document.querySelectorAll('[data-preset]').forEach(button=>select.appendChild(el('option',{value:button.dataset.preset,text:button.textContent})));
     select.addEventListener('change',()=>{if(!select.value)return;applyPreset(select.value);updateSummary()});
     const compare=el('button',{id:'compareOriginal',text:'Compare original','aria-pressed':'false'});
@@ -175,7 +175,7 @@
     const active=byId('activeEffects');
     if(active){const details=el('details',{class:'previewEffects'});details.append(el('summary',{text:'Adjusted effects'}),active);status?.after(details)}
     const info=el('details',{id:'workspaceInfo',class:'workspaceInfo'});
-    info.innerHTML='<summary>How it works</summary><p>Generate a source or open your media. Choose a look, then blend it with FX mix. Save image captures the visible result as PNG. Undo restores the previous mix or parameter change.</p><p>Source options holds seed, size and motion. Math and Style go deeper into patterns, palettes and glyphs. Effects opens individual racks; Expert adds rate, LFO and sweep controls. Processing order is fixed.</p><p>Save project keeps editable settings, including workspace preferences. It does not include original imported media: keep those files too. Snapshots and saved looks stay in this browser.</p><p>Ctrl/Cmd+Enter: generate · Alt+1–5: workflow tabs · Space: playback outside controls.</p>';
+    info.innerHTML='<summary>How it works</summary><p>Generate a source or open your media. Choose an FX preset, then adjust FX mix. Save image captures the visible result as PNG. Undo restores the previous mix or parameter change.</p><p>Source options holds seed, size and motion. Math and Style go deeper into patterns, palettes and glyphs. Effects opens individual racks; Expert adds rate, LFO and sweep controls. Processing order is fixed.</p><p>Save project keeps editable settings, including workspace preferences. It does not include original imported media: keep those files too. Snapshots and saved looks stay in this browser.</p><p>Ctrl/Cmd+Enter: generate · Alt+1–5: workflow tabs · Space: playback outside controls.</p>';
     byId('moreActions')?.appendChild(info);
   }
 

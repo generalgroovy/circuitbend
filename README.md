@@ -1,16 +1,16 @@
 # Circuitbend Sandbox
 
-[Open Circuitbend](https://generalgroovy.github.io/circuitbend/). Create procedural images, transform imported media, combine effects, and export the result. The app runs locally in the browser without a build step, account, API key or model download.
+[Open Circuitbend](https://generalgroovy.github.io/circuitbend/). Create procedural images, transform imported media, combine effects, and export the result. Processing runs locally in your browser.
 
 ## Start with one workflow
 
-1. Start in **Source**: choose an engine and render style, then **Generate** or **New variation**. A generated preview is ready on first visit. **Open media** accepts your image or video instead; imported files stay local.
-2. **Choose a look** beside the preview and adjust **FX mix**. At 0% you see the source; at 100% the full effect. **Compare original** temporarily bypasses effects without changing settings. **Undo** restores the previous mix gesture or parameter state.
+1. Start in **Source**: choose a generator and render style, then **Generate** or **New variation**. A generated preview is ready on first visit. **Open media** accepts your image or video instead; imported files stay local.
+2. Choose an **FX preset** beside the preview and adjust **FX mix**. At 0% you see the source; at 100% the full effect. **Compare original** temporarily bypasses effects without changing settings. **Undo** restores the previous mix gesture or parameter state.
 3. **Save image** downloads the visible pixels as PNG. **Export** distinguishes the preview image, full-size image, ASCII text and editable project backup.
 
 For more control, open **Source options** for reference patterns, seed, dimensions and motion. **Math** and **Style** expose mathematical generators, palettes, layers and pixel/glyph rendering. **Effects** starts with folded racks and Simple controls. Search opens matching racks; **Clear search** restores their prior open/closed state. Choose **Expert automation** for rate, LFO and sweep controls. Existing expert projects retain their saved mode.
 
-**Project & tools** holds project save/open, browser snapshots, recording, mutation, bake-output-to-source, fullscreen and **Show all tools**. **View options** on the preview contains source comparison views, zoom, crisp rendering, floating and pop-out controls. **How it works**, inside Project & tools, keeps explanations out of the main creative surface. Controls retain visible keyboard focus and the workspace uses ordinary page scrolling instead of nested scroll traps.
+**Project & tools** holds project save/open, browser snapshots, recording, mild/full FX randomization, bake-output-to-source, fullscreen and **Show all tools**. **View options** on the preview contains source comparison views, zoom, crisp rendering, floating and pop-out controls. **How it works**, inside Project & tools, keeps explanations out of the main creative surface. Controls retain visible keyboard focus and the workspace uses ordinary page scrolling instead of nested scroll traps.
 
 The complete workstation remains available: pixel/ASCII/hybrid/ANSI/braille rendering, image/video input, one imported-media overlay, presets, per-rack bypass, modulation and bake-output-to-source. Effects are applied in the implemented processing order; this is not a freely reorderable node graph.
 
